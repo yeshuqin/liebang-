@@ -82,18 +82,24 @@ export const constantRoutes = [
     name: 'Management',
     meta: { title: '管理', icon: 'example' },
     children: [
+      // {
+      //   path: 'userList',
+      //   name: 'UserList',
+      //   component: () => import('@/views/management/user/userList'),
+      //   meta: { title: '用户管理' }
+      // },
       {
-        path: 'userList',
-        name: 'UserList',
-        component: () => import('@/views/management/user/userList'),
-        meta: { title: '用户管理' }
+        path: 'categoryList',
+        name: 'categoryList',
+        component: () => import('@/views/management/category/categoryList'),
+        meta: { title: '类别管理' }
       },
-      {
-        path: 'orderList',
-        name: 'OrderList',
-        component: () => import('@/views/management/order/orderList'),
-        meta: { title: '订单管理' }
-      },
+      // {
+      //   path: 'orderList',
+      //   name: 'OrderList',
+      //   component: () => import('@/views/management/order/orderList'),
+      //   meta: { title: '订单管理' }
+      // },
       {
         path: 'goods',
         name: 'Goods',
@@ -123,31 +129,31 @@ export const constantRoutes = [
             component: () => import('@/views/management/goods/spuAudit.vue')
           }
         ]
-      },
-      {
-        path: 'newsList',
-        name: 'NewsList',
-        component: () => import('@/views/management/news/newsList'),
-        meta: { title: '消息管理' }
       }
+      // {
+      //   path: 'newsList',
+      //   name: 'NewsList',
+      //   component: () => import('@/views/management/news/newsList'),
+      //   meta: { title: '消息管理' }
+      // }
     ]
   },
-  {
-    path: '/set',
-    component: Layout,
-    redirect: '/set/platform',
-    name: 'Example',
-    meta: { title: '设置', icon: 'example' },
-    alwaysShow: true,
-    children: [
-      {
-        path: 'platformList',
-        name: 'Platform',
-        component: () => import('@/views/set/platform/platformList'),
-        meta: { title: '平台信息' }
-      }
-    ]
-  },
+  // {
+  //   path: '/set',
+  //   component: Layout,
+  //   redirect: '/set/platform',
+  //   name: 'Example',
+  //   meta: { title: '设置', icon: 'example' },
+  //   alwaysShow: true,
+  //   children: [
+  //     {
+  //       path: 'platformList',
+  //       name: 'Platform',
+  //       component: () => import('@/views/set/platform/platformList'),
+  //       meta: { title: '平台信息' }
+  //     }
+  //   ]
+  // },
 
   { path: '*', redirect: '/404', hidden: true }
 ]

@@ -1,6 +1,6 @@
 <template>
   <div class="ad_list">
-    <div class="search_wrapper">
+    <!-- <div class="search_wrapper">
       <el-form :inline="true" size="small" :model="formInline" label-width="100px">
         <el-form-item label="广告ID：">
           <el-input v-model.trim="formInline.id" clearable placeholder="请输入广告ID" />
@@ -8,42 +8,51 @@
         <el-form-item label="广告名称：">
           <el-input v-model.trim="formInline.name" clearable placeholder="请输入广告名称" />
         </el-form-item>
-        <el-form-item label="广告位名：">
-          <el-input v-model.trim="formInline.name" clearable placeholder="请输入广告位名" />
+        <el-form-item label="广告编码：">
+          <el-input v-model.trim="formInline.code" clearable placeholder="请输入广告编码" />
         </el-form-item>
         <el-form-item class="fr">
-          <el-button type="primary" size="small" icon="el-icon-search" @click="handleSubmit">搜索</el-button>
+          <el-button type="primary" size="small" icon="el-icon-search" @click="handleSearch">搜索</el-button>
           <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAdd">新增</el-button>
         </el-form-item>
       </el-form>
-    </div>
+    </div> -->
+    <el-button class="mb20" type="primary" size="small" icon="el-icon-plus" @click="handleAdd">新增</el-button>
     <div class="table_wrapper">
       <tl-table
         :table="dataTable"
+        :showpagination="false"
         @sizeChange="sizeChange"
         @pageChange="pageChange"
-        @handleDelete="handleDelete"
+        @handleDel="handleDel"
       >
+        <template slot="picUrl" slot-scope="props">
+          <span v-if="!props.obj.row.picUrl">暂无图片</span>
+          <img v-else :src="props.obj.row.picUrl" class="picUrl" alt="">
+        </template>
+        <template slot="linkUrl" slot-scope="props">
+          <a class="link_btn" :href="props.obj.row.linkUrl" target="_blank">{{ props.obj.row.linkUrl }}</a>
+        </template>
+        <template slot="useStatus" slot-scope="props">
+          <span>{{ props.obj.row.useStatus === 0 ? '未上线' : '已生效' }}</span>
+        </template>
         <template slot="handleStatus" slot-scope="props">
-          <span v-if="props.obj.row.status === 1" class="link_btn green" @click="handleStatus(props.obj.row)">生效</span>
+          <span v-if="props.obj.row.useStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">生效</span>
           <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">停用</span>
         </template>
       </tl-table>
     </div>
     <!-- 新增广告 -->
     <el-dialog title="新增广告配置" :visible.sync="showAddDialog" custom-class="add_dialog" width="800px" center>
-      <el-form :model="addObj" label-width="120px" size="small">
-        <el-form-item label="广告位名:" required>
-          <el-select v-model.trim="addObj.name" clearable placeholder="请选择">
-            <el-option label="区域一" value="shanghai" />
-            <el-option label="区域二" value="beijing" />
-          </el-select>
+      <el-form ref="ruleForm" :model="addObj" :rules="rules" label-width="120px" size="small">
+        <el-form-item label="广告编码:" required>
+          <el-input v-model.trim="addObj.code" clearable placeholder="请输入广告编码" />
         </el-form-item>
         <el-form-item label="广告名称:" required>
           <el-input v-model.trim="addObj.name" clearable placeholder="请输入广告名称" />
           <p class="tip">长度不能超过50个汉字</p>
         </el-form-item>
-        <el-form-item label="展示名称:" required>
+        <!-- <el-form-item label="展示名称:" required>
           <el-col :span="11">
             <el-input v-model.trim="addObj.name" clearable placeholder="请输入" style="width:100%" />
           </el-col>
@@ -51,9 +60,9 @@
           <el-col :span="11">
             <el-input v-model.trim="addObj.name" clearable placeholder="请输入" style="width:100%" />
           </el-col>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="配置链接:">
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入配置链接" />
+          <el-input v-model.trim="addObj.linkUrl" clearable placeholder="请输入配置链接" />
         </el-form-item>
         <el-form-item label="广告内容:" required>
           <el-upload
@@ -69,7 +78,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button size="small" type="primary" @click="handleSumbitAdd">提 交</el-button>
+        <el-button size="small" type="primary" @click="handleSumbitSave">提 交</el-button>
         <el-button size="small" @click="showAddDialog = false">返 回</el-button>
       </div>
     </el-dialog>
@@ -78,6 +87,12 @@
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+var addObj = {
+  name: '',
+  code: '',
+  linkUrl: '',
+  picUrl: 'https://www.baidu.com/img/PCfb_5bf082d29588c07f842ccde3f97243ea.png'
+}
 export default {
   components: {
     tlTable
@@ -85,8 +100,9 @@ export default {
   data() {
     return {
       formInline: {
+        id: '',
         name: '',
-        id: ''
+        code: ''
       },
       dataTable: {
         hasSelect: false,
@@ -104,50 +120,39 @@ export default {
           },
           {
             label: '广告名称',
-            prop: '',
+            prop: 'name',
             init: '—'
           },
           {
             label: '广告内容',
-            prop: '',
+            prop: 'picUrl',
+            slot: true,
             init: '—'
           },
           {
-            label: '广告位名',
-            prop: '',
+            label: '广告编号',
+            prop: 'code',
             init: '—'
           },
           {
             label: '链接地址',
-            prop: '',
-            init: '—'
-          },
-          {
-            label: '展示时间',
-            prop: '',
+            prop: 'linkUrl',
+            slot: true,
             init: '—'
           },
           {
             label: '状态',
-            prop: '',
+            prop: 'useStatus',
+            slot: true,
             init: '—'
           },
           {
-            label: '操作系统',
-            prop: '',
+            label: '操作人',
+            prop: 'operator',
             init: '—'
           }
         ],
-        data: [
-          {
-            id: '001',
-            status: 1
-          },
-          {
-            id: '002',
-            status: 2
-          }
-        ],
+        data: [],
         operation: {
           width: '200',
           data: [
@@ -158,32 +163,100 @@ export default {
             },
             {
               label: '删除',
-              Fun: 'handleDelete'
+              Fun: 'handleDel'
             }
           ]
         }
       },
-      addObj: {
-        name: ''
+      rules: {
+        code: [
+          { required: true, message: '请输入广告编码', trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: '请输入广告名称', trigger: 'blur' },
+          { min: 3, max: 5, message: '长度不能超过50个汉字', trigger: 'blur' }
+        ]
       },
+      addObj: {},
       showAddDialog: false,
       fileList: []
     }
   },
+  created() {
+    this.getInfor()
+  },
   methods: {
     getInfor() {
-
+      // var params = Object.assign({}, {
+      //   current: this.dataTable.page,
+      //   size: this.dataTable.size
+      // }, this.formInline)
+      this.dataTable.loading = true
+      this.$http.send(this.$api.banner, {}, 'get').then(res => {
+        if (res.data) {
+          this.dataTable.data = res.data
+        }
+        this.dataTable.loading = false
+      }).catch(res => {
+        this.dataTable.loading = false
+      })
     },
-    handleSubmit() {
+    handleStatus(row) {
+      this.$confirm(`此操作${row.useStatus === 0 ? '生效' : '停用'}[${row.name}]广告, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var status = row.useStatus === 0 ? 1 : 0
+        var url = `${this.$api.banner}/${row.id}/setting/${status}`
+        this.$http.send(url, {}, 'patch').then(res => {
+          this.$message.success('操作成功~')
+          this.getInfor()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
+    },
+    handleSearch() {
+      this.dataTable.page = 1
+      this.getInfor()
     },
     handleAdd() {
+      this.addObj = Object.assign({}, addObj)
       this.showAddDialog = true
     },
-    handleDelete() {
-
+    handleSet(row) {
+      this.$router.push({ name: 'ConfigGoods' })
     },
-    handleSumbitAdd() {
-
+    handleDel(row) {
+      this.$confirm('此操作将删除广告, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var url = `${this.$api.banner}/${row.id}`
+        this.$http.send(url, {}, 'delete').then(res => {
+          this.$message.success('操作成功~')
+          this.getInfor()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
+    },
+    handleSumbitSave() {
+      this.$refs['ruleForm'].validate((valid) => {
+        if (valid) {
+          this.$http.send(this.$api.banner, this.addObj, 'post').then(res => {
+            this.$message.success('操作成功')
+            this.showAddDialog = false
+            this.getInfor()
+          }).catch(res => {
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
     },
     pageChange(page) {
       this.dataTable.page = page

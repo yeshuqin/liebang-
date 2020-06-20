@@ -6,17 +6,24 @@
           <el-form-item label="商品ID">
             <el-input v-model.trim="formInline.id" clearable placeholder="请输入商品ID" />
           </el-form-item>
+          <el-form-item label="商品名称">
+            <el-input v-model.trim="formInline.name" clearable placeholder="请输入商品名称" />
+          </el-form-item>
           <el-form-item label="一级类别">
             <el-input v-model.trim="formInline.name" clearable placeholder="请输入一级类别" />
           </el-form-item>
           <el-form-item label="服务类型">
             <el-input v-model.trim="formInline.name" clearable placeholder="请输入服务类型" />
           </el-form-item>
-          <el-form-item label="配置详情">
-            <el-input v-model.trim="formInline.name" clearable placeholder="请输入配置详情" />
-          </el-form-item>
           <el-form-item label="商品状态">
-            <el-input v-model.trim="formInline.name" clearable placeholder="请输入商品状态" />
+            <el-select v-model="formInline.status" placeholder="请选择">
+              <el-option
+                v-for="item in statusItems"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="上架时间">
             <el-input v-model.trim="formInline.name" clearable placeholder="请输入上架时间" />
@@ -44,10 +51,22 @@
         :table="dataTable"
         @sizeChange="sizeChange"
         @pageChange="pageChange"
-        @handleDownload="handleDownload"
+        @handleDel="handleDel"
+        @handleEdit="handleEdit"
         @handleStatus="handleStatus"
         @handleAddSKU="handleAddSKU"
       >
+        <template slot="primaryPic" slot-scope="props">
+          <span v-if="!props.obj.row.primaryPic">暂无图片</span>
+          <img v-else :src="props.obj.row.primaryPic" class="picUrl" alt="">
+        </template>
+        <template slot="saleStatus" slot-scope="props">
+          <span>{{ props.obj.row.saleStatus === 0 ? '未上架' : '已上架' }}</span>
+        </template>
+        <template slot="handleStatus" slot-scope="props">
+          <span v-if="props.obj.row.saleStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">上架</span>
+          <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">下架</span>
+        </template>
         <template slot="expandTable" slot-scope="props">
           <el-table
             :data="props.obj.row.goodsList"
@@ -79,7 +98,7 @@
     <el-dialog title="资料下载" :visible.sync="showDownloadDialog" custom-class="download_dialog" width="800px" center>
       <div class="table_wrapper">
         <tl-table
-          :showPagination="showPagination"
+          :show-pagination="showPagination"
           :table="dataDialogTable"
         />
       </div>
@@ -110,6 +129,17 @@ export default {
         name: '',
         id: ''
       },
+      statusItems: [
+        {
+          value: 0,
+          label: '未上架'
+        },
+
+        {
+          value: 1,
+          label: '已上架'
+        }
+      ],
       dataTable: {
         hasSelect: true,
         hasExpand: true,
@@ -125,23 +155,24 @@ export default {
         ],
         tr: [
           {
+            label: '商品名称',
+            prop: 'name',
+            init: '-'
+          },
+          {
             label: '商品ID',
             prop: 'id',
             init: '-'
           },
           {
             label: '一级类别',
-            prop: 'id',
+            prop: 'cateName',
             init: '-'
           },
           {
-            label: '服务类型',
-            prop: '',
-            init: '—'
-          },
-          {
             label: '主图',
-            prop: '',
+            prop: 'primaryPic',
+            slot: true,
             init: '—'
           },
           {
@@ -150,51 +181,28 @@ export default {
             init: '—'
           },
           {
+            label: '标签',
+            prop: 'tags',
+            init: '—'
+          },
+          {
             label: '上架时间',
-            prop: '',
+            prop: 'saleTime',
             init: '—'
           },
           {
             label: '创建时间',
-            prop: '',
+            prop: 'createTime',
             init: '—'
           },
           {
             label: '商品状态',
-            prop: '',
+            prop: 'saleStatus',
+            slot: true,
             init: '—'
           }
         ],
-        data: [
-          {
-            id: '001',
-            status: 1,
-            goodsList: [
-              {
-                SKUID: 1,
-                SKUIDName: '测试1'
-              },
-              {
-                SKUID: 2,
-                SKUIDName: '测试2'
-              }
-            ]
-          },
-          {
-            id: '002',
-            status: 2,
-            goodsList: [
-              {
-                SKUID: 3,
-                SKUIDName: '测试3'
-              },
-              {
-                SKUID: 4,
-                SKUIDName: '测试4'
-              }
-            ]
-          }
-        ],
+        data: [],
         operation: {
           width: '200',
           data: [
@@ -203,8 +211,12 @@ export default {
               Fun: 'handleEdit'
             },
             {
-              label: '下架',
-              Fun: 'handleDownload'
+              slot: true,
+              Fun: 'handleStatus'
+            },
+            {
+              label: '删除',
+              Fun: 'handleDel'
             },
             {
               label: '新增SKU',
@@ -317,7 +329,6 @@ export default {
       addObj: {
         name: ''
       },
-      showEditDialog: false,
       showDownloadDialog: false,
       fileList: [
         {
@@ -360,9 +371,25 @@ export default {
       showPagination: false
     }
   },
+  created() {
+    this.getInfor()
+  },
   methods: {
     getInfor() {
-
+      var params = Object.assign({}, {
+        current: this.dataTable.page,
+        size: this.dataTable.size
+      }, this.formInline)
+      this.dataTable.loading = true
+      this.$http.send(this.$api.spu, params, 'get').then(res => {
+        if (res.data) {
+          this.dataTable.data = res.data.records
+          this.dataTable.total = res.data.total
+        }
+        this.dataTable.loading = false
+      }).catch(res => {
+        this.dataTable.loading = false
+      })
     },
     handleAddSpu() { // 新增spu
       this.$router.push({ name: 'GoodsSpuAudit' })
@@ -372,15 +399,42 @@ export default {
     },
     handleSubmit() {
     },
-    handleStatus() {
-      this.showEditDialog = true
-    },
-    handleDownload(row) {
-      this.showDownloadDialog = true
-      this.dataDialogTable.data = [row]
+    handleEdit(row) {
+      this.$router.push({ name: 'GoodsSpuAudit', query: { id: row.id }})
     },
     handleSumbitAdd() {
 
+    },
+    handleDel(row) {
+      this.$confirm('此操作将删除商品, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var url = `${this.$api.spu}/${row.id}`
+        this.$http.send(url, {}, 'delete').then(res => {
+          this.$message.success('操作成功~')
+          this.getInfor()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
+    },
+    handleStatus(row) {
+      this.$confirm(`此操作${row.saleStatus === 0 ? '上架' : '下架'}[${row.name}]商品, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var status = row.saleStatus === 0 ? 1 : 0
+        var url = `${this.$api.spu}/${row.id}/setting/${status}`
+        this.$http.send(url, {}, 'patch').then(res => {
+          this.$message.success('操作成功~')
+          this.getInfor()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
     },
     pageChange(page) {
       this.dataTable.page = page

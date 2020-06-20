@@ -361,3 +361,16 @@ div:focus {
 .fr {
   float: right;
 }
+
+.picUrl {
+  width: 100px;
+  height: 100px;
+}
+
+.mb20 {
+  margin-bottom: 20px;
+}
+
+.mb10 {
+  margin-bottom: 10px;
+}

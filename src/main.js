@@ -1,6 +1,8 @@
 import Vue from 'vue'
 
 import 'normalize.css/normalize.css'
+import http from '@/utils/request'
+import api from '@/utils/api'
 
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
@@ -11,13 +13,14 @@ import App from './App'
 import store from './store'
 import router from './router'
 
-import '@/icons'
-import '@/permission'
+Vue.prototype.$http = http
+Vue.prototype.$api = api
 
-if (process.env.NODE_ENV === 'production') {
-  const { mockXHR } = require('../mock')
-  mockXHR()
-}
+console.log(http, 'http')
+console.log(api, 'api')
+
+import '@/icons'
+// import '@/permission'
 
 Vue.use(ElementUI)
 

@@ -37,7 +37,8 @@
         <el-table-column
           v-if="table.hasIndex"
           type="index"
-          label="序号"
+          label="序列"
+          width="50px"
           :index="handleIndexMethod"
         />
         <template v-for="(item, index) in table.tr">
@@ -117,7 +118,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div v-if="showPagination" ref="bottomPage" class="tl_page">
+      <div v-if="showpagination" ref="bottomPage" class="tl_page">
         <el-pagination
           background
           layout="total, sizes, prev, pager, next, jumper"
@@ -206,7 +207,7 @@ export default {
         return [20, 50, 100, 500]
       }
     },
-    showPagination: {
+    showpagination: {
       type: Boolean,
       default: true
     },
