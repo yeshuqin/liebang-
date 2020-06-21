@@ -9,7 +9,12 @@
       </el-form-item>
       <el-form-item label="一级类别：" required>
         <el-select v-model="spuForm.cateId" clearable filterable placeholder="请选择">
-          <el-option label="区域一" value="shanghai" />
+          <el-option
+            v-for="item in cateList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="标签：" required>
@@ -88,6 +93,9 @@
           <p class="tip">文件大小不超过10M,照片建议尺寸900*900px</p>
         </div>
       </el-form-item>
+      <el-form-item v-if="isEdit" label="简介：">
+        <el-input v-model="spuForm.synopsis" type="textarea" :rows="4" clearable placeholder="请输入简介" />
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" size="small" @click="handleSumbitSpu('spuForm')">提交</el-button>
         <el-button size="small" @click="handleGo">返回</el-button>
@@ -155,6 +163,10 @@ export default {
           { required: true, message: '请输入商品ID', trigger: 'blur' }
         ]
       },
+      // "fileUrl": "string",
+      // "name": "string",
+      // "picUrl": "string",
+      // "spuId": "string"
       dataTable: {
         hasSelect: false,
         hasExpand: false,
@@ -168,30 +180,21 @@ export default {
         tr: [
           {
             label: '材料名称',
-            prop: 'id',
+            prop: 'name',
             init: '-'
           },
           {
             label: '上传文件',
-            prop: 'name',
+            prop: 'fileUrl',
             init: '—'
           },
           {
             label: '上传图片',
-            prop: '',
+            prop: 'picUrl',
             init: '—'
           }
         ],
-        data: [
-          {
-            id: '001',
-            status: 1
-          },
-          {
-            id: '002',
-            status: 2
-          }
-        ],
+        data: [],
         operation: {
           width: '100',
           data: [
@@ -217,6 +220,7 @@ export default {
       inputVisible: false,
       inputValue: '',
       showAddDialog: false,
+      cateList: [],
       addObj: {
         name: ''
       },
@@ -225,6 +229,7 @@ export default {
     }
   },
   created() {
+    this.getCate()
     this.isEdit = !!this.id
     if (this.isEdit) {
       this.getDetail()
@@ -240,6 +245,14 @@ export default {
         this.introductionList = JSON.parse(res.data.introduction)
       }).catch(res => {
         this.$message.error(res.msg)
+      })
+    },
+    getCate() {
+      this.$http.send(this.$api.addCate, {}, 'get').then(res => {
+        if (res.data) {
+          this.cateList = res.data
+        }
+      }).catch(res => {
       })
     },
     handleClose(tag) {
@@ -292,10 +305,6 @@ export default {
         this.$message.error('请选择一级类别')
         return
       }
-      if (this.tagsList.length === 0) {
-        this.$message.error('请填写标签')
-        return
-      }
       if (this.picListList.length === 0) {
         this.$message.error('请上传商品图片列表')
         return
@@ -313,9 +322,12 @@ export default {
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
         picList: this.picListList.join(','),
-        primaryPicList: this.primaryPicList.join(','),
-        tags: this.tagsList.join(',')
+        primaryPic: this.primaryPicList.join(','),
+        tags: this.tagsList.join(','),
+        materialList: []
       })
+      // if (this.dataTable.data.length > 0) {
+      // }
       this.$http.send(this.$api.spu, params, 'post').then(res => {
         this.$message.success('操作成功~')
         this.$router.push({ name: 'Goods' })

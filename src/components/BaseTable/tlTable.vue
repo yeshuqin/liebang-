@@ -19,6 +19,7 @@
         header-row-class-name="thClassName"
         @selection-change="handleSelectionChange"
         @sort-change="handleSortChange"
+        @expand-change="handleExpandChange"
         @cell-click="cellClick"
         @cell-dblclick="cellDblclick"
         @row-click="rowClick"
@@ -239,13 +240,13 @@ export default {
     this.table.page = this.table.page || 1
     this.table.size = this.table.size || 50
     this.table.total = this.table.total || 0
-    this.$nextTick(() => {
-      if (this.showTopPage) {
-        this.maxHeight = parseFloat(window.innerHeight) - parseFloat(this.$refs.tableBox.getBoundingClientRect().top) - 120
-      } else {
-        this.maxHeight = parseFloat(window.innerHeight) - parseFloat(this.$refs.tableBox.getBoundingClientRect().top) - 60
-      }
-    })
+    // this.$nextTick(() => {
+    //   if (this.showTopPage) {
+    //     this.maxHeight = parseFloat(window.innerHeight) - parseFloat(this.$refs.tableBox.getBoundingClientRect().top) - 120
+    //   } else {
+    //     this.maxHeight = parseFloat(window.innerHeight) - parseFloat(this.$refs.tableBox.getBoundingClientRect().top) - 60
+    //   }
+    // })
     this.table.hasOperation = typeof (this.table.hasOperation) !== 'undefined' ? this.table.hasOperation : true // 有无操作功能
     this.table.hasExpand = this.table.hasExpand || false // 有无展开行功能
     this.table.hasSelect = this.table.hasSelect || false // 有无多选功能
@@ -283,6 +284,10 @@ export default {
     },
     handleSortChange(column) {
       this.$emit('onHandleSortChange', column)
+    },
+    handleExpandChange(row, type) {
+      console.log(row, type, '测试')
+      this.$emit('onHandleExpandChange', row, type)
     },
     handleOperation(scope, item) {
       this.$emit(item.Fun, scope.row, scope.$index)

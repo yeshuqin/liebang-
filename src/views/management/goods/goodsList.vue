@@ -1,8 +1,8 @@
 <template>
   <div class="_list">
     <el-form :inline="true" size="small" :model="formInline" label-width="100px">
-      <el-row style="width:1300px">
-        <el-col :span="18">
+      <el-row>
+        <el-col :span="20">
           <el-form-item label="商品ID">
             <el-input v-model.trim="formInline.id" clearable placeholder="请输入商品ID" />
           </el-form-item>
@@ -10,13 +10,17 @@
             <el-input v-model.trim="formInline.name" clearable placeholder="请输入商品名称" />
           </el-form-item>
           <el-form-item label="一级类别">
-            <el-input v-model.trim="formInline.name" clearable placeholder="请输入一级类别" />
-          </el-form-item>
-          <el-form-item label="服务类型">
-            <el-input v-model.trim="formInline.name" clearable placeholder="请输入服务类型" />
+            <el-select v-model="formInline.cateId" filterable clearable placeholder="请选择">
+              <el-option
+                v-for="item in cateList"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="商品状态">
-            <el-select v-model="formInline.status" placeholder="请选择">
+            <el-select v-model="formInline.saleStatus" filterable clearable placeholder="请选择">
               <el-option
                 v-for="item in statusItems"
                 :key="item.value"
@@ -26,22 +30,29 @@
             </el-select>
           </el-form-item>
           <el-form-item label="上架时间">
-            <el-input v-model.trim="formInline.name" clearable placeholder="请输入上架时间" />
+            <el-date-picker
+              v-model="saleTime"
+              value-format="timestamp"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+            />
           </el-form-item>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="4">
           <el-form-item>
-            <el-button type="primary" size="small" icon="el-icon-search" @click="handleSubmit">搜索</el-button>
+            <el-button type="primary" size="small" icon="el-icon-search" @click="handleSearch">搜索</el-button>
           </el-form-item>
           <el-form-item>
             <el-button type="primary" size="small" icon="el-icon-plus" @click="handleAddSpu">新增</el-button>
           </el-form-item>
           <br>
           <el-form-item>
-            <el-button type="defalut" @click="handleSubmit">批量上架</el-button>
+            <el-button type="defalut" @click="handleBatchStatus(1)">批量上架</el-button>
           </el-form-item>
           <el-form-item>
-            <el-button type="defalut" @click="handleSubmit">批量下架</el-button>
+            <el-button type="defalut" @click="handleBatchStatus(0)">批量下架</el-button>
           </el-form-item>
         </el-col>
       </el-row>
@@ -49,6 +60,7 @@
     <div class="table_wrapper">
       <tl-table
         :table="dataTable"
+        @onHandleSelectionChange="onHandleSelectionChange"
         @sizeChange="sizeChange"
         @pageChange="pageChange"
         @handleDel="handleDel"
@@ -62,6 +74,12 @@
         </template>
         <template slot="saleStatus" slot-scope="props">
           <span>{{ props.obj.row.saleStatus === 0 ? '未上架' : '已上架' }}</span>
+        </template>
+        <template slot="saleTime" slot-scope="props">
+          <span>{{ props.obj.row.saleTime | timestampToTime }}</span>
+        </template>
+        <template slot="minPrice" slot-scope="props">
+          <span>{{ props.obj.row.minPrice }} - {{ props.obj.row.maxPrice }}</span>
         </template>
         <template slot="handleStatus" slot-scope="props">
           <span v-if="props.obj.row.saleStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">上架</span>
@@ -126,8 +144,12 @@ export default {
   data() {
     return {
       formInline: {
+        id: '',
         name: '',
-        id: ''
+        cateId: '',
+        saleStatus: '',
+        saleTimeStart: '',
+        saleTimeEnd: ''
       },
       statusItems: [
         {
@@ -177,7 +199,8 @@ export default {
           },
           {
             label: '最低-最高销售价',
-            prop: '',
+            prop: 'minPrice',
+            slot: true,
             init: '—'
           },
           {
@@ -188,6 +211,7 @@ export default {
           {
             label: '上架时间',
             prop: 'saleTime',
+            slot: true,
             init: '—'
           },
           {
@@ -225,6 +249,8 @@ export default {
           ]
         }
       },
+      saleTime: [],
+      checkBox: [],
       tr: [
         {
           label: 'SKUID',
@@ -329,6 +355,7 @@ export default {
       addObj: {
         name: ''
       },
+      cateList: [],
       showDownloadDialog: false,
       fileList: [
         {
@@ -373,15 +400,24 @@ export default {
   },
   created() {
     this.getInfor()
+    this.getCate()
   },
   methods: {
     getInfor() {
+      if (this.saleTime) {
+        this.formInline.saleTimeStart = this.saleTime[0] / 1000
+        this.formInline.saleTimeEnd = this.saleTime[1] / 1000
+      } else {
+        this.formInline.saleTimeStart = ''
+        this.formInline.saleTimeEnd = ''
+      }
+      var url = `${this.$api.spu}/page`
       var params = Object.assign({}, {
         current: this.dataTable.page,
         size: this.dataTable.size
       }, this.formInline)
       this.dataTable.loading = true
-      this.$http.send(this.$api.spu, params, 'get').then(res => {
+      this.$http.send(url, params, 'post').then(res => {
         if (res.data) {
           this.dataTable.data = res.data.records
           this.dataTable.total = res.data.total
@@ -391,8 +427,25 @@ export default {
         this.dataTable.loading = false
       })
     },
-    handleAddSpu() { // 新增spu
-      this.$router.push({ name: 'GoodsSpuAudit' })
+    getCate() {
+      this.$http.send(this.$api.addCate, {}, 'get').then(res => {
+        if (res.data) {
+          this.cateList = res.data
+        }
+      }).catch(res => {
+      })
+    },
+    onHandleSelectionChange(val) {
+      this.checkBox = val.map(item => {
+        return item.id
+      })
+    },
+    handleSearch() {
+      this.dataTable.page = 1
+      this.getInfor()
+    },
+    handleAddSpu(row) { // 新增spu
+      this.$router.push({ name: 'GoodsSpuAudit', query: { spuId: row.id }})
     },
     handleAddSKU() { // 新增sku
       this.$router.push({ name: 'GoodsSkuAudit' })
@@ -421,14 +474,39 @@ export default {
       })
     },
     handleStatus(row) {
-      this.$confirm(`此操作${row.saleStatus === 0 ? '上架' : '下架'}[${row.name}]商品, 是否继续?`, '提示', {
+      this.$confirm(`此操作将${row.saleStatus === 0 ? '上架' : '下架'}[${row.name}]商品, 是否继续?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         var status = row.saleStatus === 0 ? 1 : 0
-        var url = `${this.$api.spu}/${row.id}/setting/${status}`
-        this.$http.send(url, {}, 'patch').then(res => {
+        var url = `${this.$api.spu}/setting`
+        this.$http.send(url, {
+          spuList: [row.id],
+          operation: status
+        }, 'patch').then(res => {
+          this.$message.success('操作成功~')
+          this.getInfor()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
+    },
+    handleBatchStatus(type) {
+      if (this.checkBox.length === 0) {
+        this.$message.error('请至少选择一项~')
+        return
+      }
+      this.$confirm(`此操作将批量${type === 1 ? '上架' : '下架'}商品, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var url = `${this.$api.spu}/setting`
+        this.$http.send(url, {
+          spuList: this.checkBox,
+          operation: type
+        }, 'patch').then(res => {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {

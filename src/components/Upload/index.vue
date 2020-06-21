@@ -1,8 +1,8 @@
 <template>
   <div class="upload">
     <el-upload
-      action="https://jsonplaceholder.typicode.com/posts/"
-      list-type="picture-card"
+      :action="$api.upload"
+      name="image"
       :on-preview="handlePictureCardPreview"
       :on-remove="handleRemove"
       :on-success="handleSuccess"
@@ -12,7 +12,8 @@
       :file-list="fileList"
       :limit="limit"
     >
-      <i class="el-icon-plus" />
+      <!-- <i class="el-icon-plus" /> -->
+      <el-button size="small" type="primary">上传图片</el-button>
     </el-upload>
     <el-dialog :visible.sync="dialogVisible" width="400px">
       <img width="100%" :src="dialogImageUrl" alt="">
@@ -53,8 +54,18 @@ export default {
     handleSuccess(response, file, fileList) {
       this.$emit('handleSuccess', response, file, fileList)
     },
-    beforeAvatarUpload() {
-      this.$emit('beforeAvatarUpload')
+    beforeAvatarUpload(file) {
+      // this.$emit('beforeAvatarUpload')
+      const isJPG = file.type === 'image/jpeg'
+      const isLt1M = file.size / 1024 / 1024 < 1
+
+      if (!isJPG) {
+        this.$message.error('上传头像图片只能是 JPG 格式!')
+      }
+      if (!isLt1M) {
+        this.$message.error('上传头像图片大小不能超过 1MB!')
+      }
+      return isJPG && isLt1M
     },
     handleExceed(files, fileList) {
       if (this.limit === 1) {
@@ -67,5 +78,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 </style>

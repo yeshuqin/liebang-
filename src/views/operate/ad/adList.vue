@@ -65,7 +65,7 @@
           <el-input v-model.trim="addObj.linkUrl" clearable placeholder="请输入配置链接" />
         </el-form-item>
         <el-form-item label="广告内容:" required>
-          <el-upload
+          <!-- <el-upload
             class="upload-demo"
             action="https://jsonplaceholder.typicode.com/posts/"
             multiple
@@ -74,7 +74,9 @@
           >
             <el-button size="small" type="primary">图片上传</el-button>
             <span slot="tip" class="el-upload__tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</span>
-          </el-upload>
+          </el-upload> -->
+          <Upload :limit="1" @handleSuccess="handleSuccessUpload" />
+          <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -87,6 +89,7 @@
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+import Upload from '@/components/Upload/index'
 var addObj = {
   name: '',
   code: '',
@@ -95,7 +98,8 @@ var addObj = {
 }
 export default {
   components: {
-    tlTable
+    tlTable,
+    Upload
   },
   data() {
     return {
@@ -257,6 +261,9 @@ export default {
           return false
         }
       })
+    },
+    handleSuccessUpload(file, fileList) {
+      console.log(file, fileList)
     },
     pageChange(page) {
       this.dataTable.page = page
