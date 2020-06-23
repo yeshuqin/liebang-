@@ -5,5 +5,6 @@ export default {
   showcaseSpu: baseUrl + 'showcase/spu',
   banner: baseUrl + 'banner',
   spu: baseUrl + 'spu',
-  upload: baseUrl + '/upload/image'
+  sku: baseUrl + 'sku',
+  upload: baseUrl + 'upload/image'
 }

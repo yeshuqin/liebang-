@@ -11,21 +11,22 @@
       >
         <template slot="picUrl" slot-scope="props">
           <span v-if="!props.obj.row.picUrl">暂无图片</span>
-          <img v-else :src="props.obj.row.picUrl" alt="" style="width:100px;">
+          <img v-else :src="props.obj.row.picUrl" class="picUrl" alt="" style="width:100px;">
         </template>
       </tl-table>
     </div>
-    <!-- 类目 -->
-    <el-dialog title="新增类目" :visible.sync="showCategoryDialog" custom-class="add_dialog" width="800px" center>
+    <!-- 类别 -->
+    <el-dialog title="新增类别" :append-to-body="true" :visible.sync="showCategoryDialog" custom-class="add_dialog" width="600px" center>
       <el-form :model="addObj" label-width="120px" size="small">
         <el-form-item label="类别名称:" required>
           <el-input v-model.trim="addObj.name" clearable placeholder="请输入类别名称" />
         </el-form-item>
-        <el-form-item label="图片地址:" required>
-          <!-- <el-input v-model.trim="addObj.picUrl" clearable placeholder="请输入企业类型" /> -->
+        <el-form-item label="图片地址:">
+          <Upload :limit="1" :filelist="filelist" @handleSuccess="handleSuccessUpload" @handleRemove="handleRemove" />
+          <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
         </el-form-item>
-        <el-form-item label="简介:" required>
-          <el-input v-model.trim="addObj.synopsis" type="textarea" :rows="4" clearable placeholder="请输入简介" />
+        <el-form-item label="简介:">
+          <el-input v-model.trim="addObj.synopsis" type="textarea" :rows="4" placeholder="请输入简介" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -38,15 +39,17 @@
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+import Upload from '@/components/Upload/index'
 const addObj = {
   id: '',
   name: '',
-  picUrl: 'https://file2.pingxiaobao.com/dev/2006/12/51de2b8a1b6e5f52e45cbb9fe319b6ac.png',
+  picUrl: '',
   synopsis: ''
 }
 export default {
   components: {
-    tlTable
+    tlTable,
+    Upload
   },
   data() {
     return {
@@ -60,12 +63,12 @@ export default {
         expands: [],
         tr: [
           {
-            label: '类目ID',
+            label: '类别ID',
             prop: 'id',
             init: '-'
           },
           {
-            label: '类目名称',
+            label: '类别名称',
             prop: 'name',
             init: '—'
           },
@@ -108,7 +111,7 @@ export default {
       },
       addObj: {},
       showCategoryDialog: false,
-      fileList: []
+      filelist: []
     }
   },
   created() {
@@ -127,7 +130,7 @@ export default {
       })
     },
     handleDel(row) {
-      this.$confirm('此操作将删除该类目, 是否继续?', '提示', {
+      this.$confirm('此操作将删除该类别, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -152,6 +155,7 @@ export default {
     },
     handleAdd() {
       this.addObj = Object.assign({}, addObj)
+      this.filelist = []
       this.showCategoryDialog = true
     },
     handleEdit(row) {
@@ -161,16 +165,28 @@ export default {
         picUrl: row.picUrl,
         synopsis: row.synopsis
       })
+      this.filelist = [{ name: row.picUrl, url: row.picUrl }]
       this.showCategoryDialog = true
     },
     handleSumbitAdd() {
+      if (!this.addObj.name) {
+        this.$message.error('请输入类别名称~')
+        return
+      }
       const methods = this.addObj.id ? 'put' : 'post'
       this.$http.send(this.$api.addCate, this.addObj, methods).then(res => {
         this.$message.success('操作成功~')
         this.showCategoryDialog = false
         this.getInfor()
       }).catch(res => {
+        this.$message.error(res.message)
       })
+    },
+    handleSuccessUpload(file, fileList) {
+      this.addObj.picUrl = file.data
+    },
+    handleRemove(file, fileList) {
+      this.addObj.picUrl = ''
     }
   }
 }

@@ -39,40 +39,40 @@
         <el-button v-else class="button-new-tag" size="small" @click="showInput">+ 新增</el-button>
       </el-form-item>
       <el-form-item label="商品图片：" required>
-        <Upload :limit="10" @handleSuccess="handleSuccessTheme" />
+        <Upload :limit="10" :filelist="filelistPic" @handleSuccess="handleSuccessPic" @handleRemove="handleRemovePic" />
         <p class="tip">备注：最多10张，建议尺寸900*900px</p>
       </el-form-item>
       <el-form-item label="商品主题：" required>
-        <Upload :limit="10" />
+        <Upload :limit="10" :show-file-list="false" :image-url="spuForm.primaryPic" @handleSuccess="handleSuccessTheme" />
         <p class="tip">上传的图片默认作为主题，建议尺寸900*900px，1M以内</p>
       </el-form-item>
       <el-form-item label="商品详情：" required>
         <el-row>
           <el-col :span="8">
             <p class="title">产品内容</p>
-            <Upload />
+            <Upload :limit="10" :show-file-list="false" :image-url="introductionList['产品内容']" @click.native="handleType('产品内容')" @handleSuccess="handleSuccessPro" />
           </el-col>
           <el-col :span="8">
             <p class="title">产品作用</p>
-            <Upload />
+            <Upload :limit="10" :show-file-list="false" :image-url="introductionList['产品作用']" @click.native="handleType('产品作用')" @handleSuccess="handleSuccessPro" />
           </el-col>
           <el-col :span="8">
             <p class="title">服务优势</p>
-            <Upload />
+            <Upload :limit="10" :show-file-list="false" :image-url="introductionList['服务优势']" @click.native="handleType('服务优势')" @handleSuccess="handleSuccessPro" />
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="8">
             <p class="title">办理流程</p>
-            <Upload />
+            <Upload :limit="10" :show-file-list="false" :image-url="introductionList['办理流程']" @click.native="handleType('办理流程')" @handleSuccess="handleSuccessPro" />
           </el-col>
           <el-col :span="8">
             <p class="title">所需资料</p>
-            <Upload />
+            <Upload :limit="10" :show-file-list="false" :image-url="introductionList['所需资料']" @click.native="handleType('所需资料')" @handleSuccess="handleSuccessPro" />
           </el-col>
           <el-col :span="8">
             <p class="title">常见问题</p>
-            <Upload />
+            <Upload :limit="10" :show-file-list="false" :image-url="introductionList['常见问题']" @click.native="handleType('常见问题')" @handleSuccess="handleSuccessPro" />
           </el-col>
         </el-row>
         <p class="tip">备注：每个不超过一张，建议尺寸x*1280px</p>
@@ -84,16 +84,21 @@
             :showpagination="false"
             :table="dataTable"
             @handleDel="handleDel"
+            @handleEdit="handleEdit"
           >
             <template slot="picUrl" slot-scope="props">
               <span v-if="!props.obj.row.picUrl">暂无图片</span>
-              <img v-else :src="props.obj.row.picUrl" alt="">
+              <img v-else class="picUrl" :src="props.obj.row.picUrl" alt="">
+            </template>
+            <template slot="fileUrl" slot-scope="props">
+              <a v-if="props.obj.row.fileUrl" class="link_btn" :href="props.obj.row.fileUrl" target="_blank">{{ props.obj.row.fileUrl }}</a>
+              <span v-else>暂无</span>
             </template>
           </tl-table>
           <p class="tip">文件大小不超过10M,照片建议尺寸900*900px</p>
         </div>
       </el-form-item>
-      <el-form-item v-if="isEdit" label="简介：">
+      <el-form-item label="简介：">
         <el-input v-model="spuForm.synopsis" type="textarea" :rows="4" clearable placeholder="请输入简介" />
       </el-form-item>
       <el-form-item>
@@ -102,36 +107,30 @@
       </el-form-item>
     </el-form>
     <!-- 新增材料 -->
-    <el-dialog title="新增材料" :visible.sync="showAddDialog" custom-class="add_dialog" width="600px" center>
+    <el-dialog :title="fileEdit? '编辑材料' : '新增材料'" :visible.sync="showAddDialog" custom-class="add_dialog" width="600px" center>
       <el-form ref="ruleForm" :model="addObj" size="small" label-width="120px">
         <el-form-item label="材料名称:" required>
-          <el-input v-model.trim="addObj.code" clearable placeholder="请输入橱窗编码" />
+          <el-input v-model.trim="addObj.name" clearable placeholder="请输入材料名称" />
         </el-form-item>
         <el-form-item label="上传文件:">
           <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple
-            :limit="3"
+            :action="$api.upload"
+            name="image"
+            :limit="1"
+            :on-remove="handleFileRemove"
+            :on-error="handleError"
+            :on-success="handleFileSuccess"
             :file-list="fileList"
           >
             <el-button size="small" type="primary">上传资料</el-button>
           </el-upload>
         </el-form-item>
         <el-form-item label="上传图片:">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple
-            :limit="3"
-            :file-list="fileList"
-          >
-            <el-button size="small" type="primary">图片上传</el-button>
-          </el-upload>
+          <Upload :filelist="picFileList" @handleSuccess="handleSuccessPicUrl" @handleRemove="handleRemovePicUrl" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" size="small" @click="handleSumbitAdd">提 交</el-button>
+        <el-button type="primary" size="small" @click="handleSumbitAdd">确 定</el-button>
         <el-button size="small" @click="showAddDialog = false">返 回</el-button>
       </div>
     </el-dialog>
@@ -141,6 +140,12 @@
 <script>
 import Upload from '@/components/Upload/index'
 import tlTable from '@/components/BaseTable/tlTable'
+var addMaterial = {
+  fileUrl: '',
+  picUrl: '',
+  id: '',
+  name: ''
+}
 export default {
   components: {
     Upload,
@@ -156,17 +161,14 @@ export default {
         picList: '',
         primaryPic: '',
         synopsis: '',
-        tags: ''
+        tags: '',
+        materialList: []
       },
       rules: {
         name: [
           { required: true, message: '请输入商品ID', trigger: 'blur' }
         ]
       },
-      // "fileUrl": "string",
-      // "name": "string",
-      // "picUrl": "string",
-      // "spuId": "string"
       dataTable: {
         hasSelect: false,
         hasExpand: false,
@@ -186,11 +188,13 @@ export default {
           {
             label: '上传文件',
             prop: 'fileUrl',
+            slot: true,
             init: '—'
           },
           {
             label: '上传图片',
             prop: 'picUrl',
+            slot: true,
             init: '—'
           }
         ],
@@ -198,6 +202,10 @@ export default {
         operation: {
           width: '100',
           data: [
+            {
+              label: '编辑',
+              Fun: 'handleEdit'
+            },
             {
               label: '删除',
               Fun: 'handleDel'
@@ -207,25 +215,26 @@ export default {
       },
       isEdit: false,
       tagsList: [],
-      picListList: ['https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg'], // 商品列表
+      picListList: [], // 商品列表
       introductionList: {
-        '产品内容': 'https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg',
-        '产品作用': 'https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg',
-        '服务优势': 'https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg',
-        '办理流程': 'https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg',
-        '所需资料': 'https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg',
-        '常见问题': 'https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg'
+        '产品内容': '',
+        '产品作用': '',
+        '服务优势': '',
+        '办理流程': '',
+        '所需资料': '',
+        '常见问题': ''
       }, // 商品详情
-      primaryPicList: ['https://file2.pingxiaobao.com/dev/2005/29/039125f95f9419d9f621a3818c38977e.jpg'], // 商品主题
+      introductionKey: '',
       inputVisible: false,
       inputValue: '',
       showAddDialog: false,
       cateList: [],
-      addObj: {
-        name: ''
-      },
+      addObj: {},
       fileList: [],
-      id: this.$route.query.id
+      id: this.$route.query.id,
+      picFileList: [],
+      filelistPic: [],
+      fileEdit: false
     }
   },
   created() {
@@ -243,6 +252,13 @@ export default {
         this.spuForm = res.data
         this.tagsList = res.data.tags.split(',')
         this.introductionList = JSON.parse(res.data.introduction)
+        this.picListList = res.data.picList.split(',')
+        this.dataTable.data = res.data.materialList || []
+        this.filelistPic = res.data.picList.split(',').map(item => {
+          return {
+            url: item
+          }
+        })
       }).catch(res => {
         this.$message.error(res.msg)
       })
@@ -272,28 +288,72 @@ export default {
       this.inputVisible = false
       this.inputValue = ''
     },
-    handleSuccessTheme(file, fileList) {
-      console.log(file, fileList, '22')
+    handleSuccessPic(response) { // 商品图片
+      this.picListList.push(response.data)
+    },
+    handleRemovePic(file, fileList) {
+      this.picListList = this.fileList.map(item => {
+        return item.response.data
+      })
+    },
+    handleSuccessTheme(response) { // 商品主题
+      this.spuForm.primaryPic = response.data
+    },
+    handleSuccessPro(response) {
+      this.introductionList[this.introductionKey] = response.data
+    },
+    handleType(type) {
+      this.introductionKey = type
+    },
+    handleSuccessPicUrl(response) { // 材料上传图片
+      this.addObj.picUrl = response.data
+    },
+    handleRemovePicUrl() {
+      this.addObj.picUrl = ''
+    },
+    handleFileSuccess(response) { //材料上传资料
+      this.addObj.fileUrl = response.data
+    },
+    handleFileRemove() {
+      this.addObj.fileUrl = ''
+    },
+    handleError(err) {
+      console.log(err)
     },
     addMaterial() {
+      this.addObj = Object.assign({}, addMaterial)
+      this.picFileList = []
+      this.fileEdit = false
       this.showAddDialog = true
     },
     handleSumbitAdd() {
-
+      if (!this.addObj.name) {
+        this.$message.error('请输入材料名称~')
+        return
+      }
+      if (!this.fileEdit) {
+        this.dataTable.data.push(JSON.parse(JSON.stringify(this.addObj)))
+      } else {
+        this.$set(this.dataTable.data, this.addObj.index, this.addObj)
+      }
+      this.showAddDialog = false
     },
-    handleDel(row) {
-      this.$confirm('此操作将删除材料, 是否继续?', '提示', {
+    handleEdit(row, index) {
+      this.addObj = Object.assign({}, addMaterial, row, {
+        index: index
+      })
+      this.picFileList = row.picUrl ? [{ url: row.picUrl }] : []
+      this.fileEdit = true
+      this.showAddDialog = true
+    },
+    handleDel(row, index) {
+      this.$confirm(`此操作将删除${row.name}材料, 是否继续?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var url = `${this.$api.showcase}/${row.id}`
-        this.$http.send(url, {}, 'delete').then(res => {
-          this.$message.success('操作成功~')
-          this.getInfor()
-        }).catch(res => {
-          this.$message.error(res.msg)
-        })
+        this.dataTable.data.splice(index, 1)
+        this.$message.success('操作成功~')
       })
     },
     handleSumbitSpu() {
@@ -309,7 +369,7 @@ export default {
         this.$message.error('请上传商品图片列表')
         return
       }
-      if (this.primaryPicList.length === 0) {
+      if (!this.spuForm.primaryPic) {
         this.$message.error('请上传商品主图图片')
         return
       }
@@ -322,13 +382,12 @@ export default {
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
         picList: this.picListList.join(','),
-        primaryPic: this.primaryPicList.join(','),
         tags: this.tagsList.join(','),
-        materialList: []
+        materialList: this.dataTable.data
       })
-      // if (this.dataTable.data.length > 0) {
-      // }
-      this.$http.send(this.$api.spu, params, 'post').then(res => {
+      console.log(params)
+      var method = params.id ? 'put' : 'post'
+      this.$http.send(this.$api.spu, params, method).then(res => {
         this.$message.success('操作成功~')
         this.$router.push({ name: 'Goods' })
         this.getInfor()

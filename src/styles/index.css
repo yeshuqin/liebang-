@@ -374,3 +374,8 @@ div:focus {
 .mb10 {
   margin-bottom: 10px;
 }
+
+.el-dialog--center .el-dialog__body {
+  max-height: 400px;
+  overflow-y: auto;
+}

@@ -65,6 +65,7 @@
         @pageChange="pageChange"
         @handleDel="handleDel"
         @handleEdit="handleEdit"
+        @handleSKUList="handleSKUList"
         @handleStatus="handleStatus"
         @handleAddSKU="handleAddSKU"
       >
@@ -85,51 +86,29 @@
           <span v-if="props.obj.row.saleStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">上架</span>
           <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">下架</span>
         </template>
-        <template slot="expandTable" slot-scope="props">
-          <el-table
-            :data="props.obj.row.goodsList"
-            style="width: 100%"
-            border
-          >
-            <el-table-column
-              v-for="(item, index) in tr"
-              :key="index"
-              :prop="item.prop"
-              :label="item.label"
-            />
-            <el-table-column
-              fixed="right"
-              label="操作"
-              width="200"
-            >
-              <template slot-scope="scope">
-                <span class="link_btn green" @click="deleteRow(scope.$index, tableData)">编辑</span>
-                <span class="link_btn blue" @click="deleteRow(scope.$index, tableData)">下架</span>
-                <span class="link_btn red" @click="deleteRow(scope.$index, tableData)">删除</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </template>
       </tl-table>
     </div>
-    <!-- 资料下载 -->
-    <el-dialog title="资料下载" :visible.sync="showDownloadDialog" custom-class="download_dialog" width="800px" center>
-      <div class="table_wrapper">
-        <tl-table
-          :show-pagination="showPagination"
-          :table="dataDialogTable"
-        />
-      </div>
-      <div>
-        <p class="title green">企业已上传资料</p>
-        <!-- <p v-if="false" class="title red">企业未上传资料</p> -->
-        <el-checkbox-group v-model="downloadObj.check" class="download_checkbox">
-          <el-checkbox v-for="item in fileList" :key="item.value" :label="item.value"> {{ item.label }}</el-checkbox>
-        </el-checkbox-group>
-      </div>
+    <!-- sku列表 -->
+    <el-dialog :title="`${spuName} SKU列表`" :visible.sync="showSkuDialog" custom-class="sku_dialog" width="1000px" center>
+      <tl-table
+        :showpagination="false"
+        :table="skuDataTable"
+        @handleDel="handleDelSKU"
+      >
+        <template slot="saleStatus" slot-scope="props">
+          <span>{{ props.obj.row.saleStatus === 0 ? '未上架' : '已上架' }}</span>
+        </template>
+        <template slot="attribute" slot-scope="props">
+          <span v-if="props.obj.row.attribute">{{ getAttribute(props.obj.row.attribute) }}</span>
+        </template>
+        <template slot="handleStatus" slot-scope="props">
+          <span v-if="props.obj.row.saleStatus === 0" class="link_btn" @click="handleSKUStatus(props.obj.row)">上架</span>
+          <span v-else class="link_btn red" @click="handleSKUStatus(props.obj.row)">下架</span>
+        </template>
+      </tl-table>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSumbitAdd">提 交</el-button>
-        <el-button @click="showDownloadDialog = false">返 回</el-button>
+        <!-- <el-button type="primary" size="small"></el-button> -->
+        <el-button size="small" @click="showSkuDialog = false">关 闭</el-button>
       </div>
     </el-dialog>
   </div>
@@ -164,17 +143,12 @@ export default {
       ],
       dataTable: {
         hasSelect: true,
-        hasExpand: true,
+        hasExpand: false,
         loading: false,
         page: 1,
         size: 50,
         total: 0,
-        expands: [
-          {
-            slot: true,
-            prop: 'expandTable'
-          }
-        ],
+        expands: [],
         tr: [
           {
             label: '商品名称',
@@ -235,6 +209,10 @@ export default {
               Fun: 'handleEdit'
             },
             {
+              label: 'SKU列表',
+              Fun: 'handleSKUList'
+            },
+            {
               slot: true,
               Fun: 'handleStatus'
             },
@@ -249,153 +227,80 @@ export default {
           ]
         }
       },
-      saleTime: [],
-      checkBox: [],
-      tr: [
-        {
-          label: 'SKUID',
-          prop: 'SKUID',
-          init: '-'
-        },
-        {
-          label: 'SKU名称',
-          prop: 'SKUIDName',
-          init: '—'
-        },
-        {
-          label: '属性',
-          prop: '',
-          init: '—'
-        },
-        {
-          label: '成本价',
-          prop: '',
-          init: '—'
-        },
-        {
-          label: '实付价',
-          prop: '',
-          init: '—'
-        },
-        {
-          label: '销售价',
-          prop: '',
-          init: '—'
-        },
-        {
-          label: '市场价',
-          prop: '',
-          init: '—'
-        },
-        {
-          label: '商品状态',
-          prop: '',
-          init: '—'
-        }
-      ],
-      dataDialogTable: {
+      skuDataTable: {
         hasSelect: false,
         hasExpand: false,
         loading: false,
-        hasOperation: false,
         page: 1,
         size: 50,
         total: 0,
         expands: [],
         tr: [
           {
-            label: '商品ID',
+            label: 'SKUID',
             prop: 'id',
             init: '-'
           },
           {
-            label: '一级类目',
+            label: 'SKU名称',
             prop: '',
             init: '—'
           },
           {
-            label: '服务类型',
+            label: '属性',
+            prop: 'attribute',
+            width: '200px',
+            slot: true,
+            init: '—'
+          },
+          {
+            label: '成本价',
+            prop: 'costPrice',
+            init: '—'
+          },
+          {
+            label: '实付价',
             prop: '',
             init: '—'
           },
           {
-            label: '主图',
-            prop: '',
+            label: '销售价',
+            prop: 'salePrice',
             init: '—'
           },
           {
-            label: '最低-最高价区间',
-            prop: '',
-            init: '—'
-          },
-          {
-            label: '上架时间',
-            prop: '',
-            init: '—'
-          },
-          {
-            label: '创建时间',
-            prop: '',
+            label: '市场价',
+            prop: 'marketPrice',
             init: '—'
           },
           {
             label: '商品状态',
-            prop: '',
+            prop: 'saleStatus',
+            slot: true,
             init: '—'
           }
         ],
-        data: [
-        ],
+        data: [],
         operation: {
-          width: '200',
+          width: '100',
           data: [
+            {
+              slot: true,
+              Fun: 'handleStatus'
+            },
+            {
+              label: '删除',
+              Fun: 'handleDel'
+            }
           ]
         }
       },
-      addObj: {
-        name: ''
-      },
+      spuName: '',
+      spuId: '',
+      saleTime: [],
+      checkBox: [],
       cateList: [],
-      showDownloadDialog: false,
-      fileList: [
-        {
-          label: '资料1：《xxx申请书》',
-          value: 1
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 2
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 3
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 4
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 5
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 6
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 7
-        },
-        {
-          label: '资料1：《xxx申请书》',
-          value: 8
-        }
-      ],
-      downloadObj: {
-        check: [],
-        id: ''
-      },
-      showPagination: false
+      showSkuDialog: false
     }
   },
   created() {
@@ -447,16 +352,13 @@ export default {
     handleAddSpu(row) { // 新增spu
       this.$router.push({ name: 'GoodsSpuAudit', query: { spuId: row.id }})
     },
-    handleAddSKU() { // 新增sku
-      this.$router.push({ name: 'GoodsSkuAudit' })
+    handleAddSKU(row) { // 新增sku
+      this.$router.push({ name: 'GoodsSkuAudit', query: { spuId: row.id }})
     },
     handleSubmit() {
     },
     handleEdit(row) {
       this.$router.push({ name: 'GoodsSpuAudit', query: { id: row.id }})
-    },
-    handleSumbitAdd() {
-
     },
     handleDel(row) {
       this.$confirm('此操作将删除商品, 是否继续?', '提示', {
@@ -468,6 +370,21 @@ export default {
         this.$http.send(url, {}, 'delete').then(res => {
           this.$message.success('操作成功~')
           this.getInfor()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
+    },
+    handleDelSKU(row) {
+      this.$confirm('此操作将删除商品SKU, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var url = `${this.$api.sku}/${row.id}`
+        this.$http.send(url, {}, 'delete').then(res => {
+          this.$message.success('操作成功~')
+          this.getSkuList()
         }).catch(res => {
           this.$message.error(res.msg)
         })
@@ -491,6 +408,50 @@ export default {
           this.$message.error(res.msg)
         })
       })
+    },
+    handleSKUStatus(row) {
+      this.$confirm(`此操作将${row.saleStatus === 0 ? '上架' : '下架'}[${row.id}]商品SKU, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        var status = row.saleStatus === 0 ? 1 : 0
+        var url = `${this.$api.sku}/${row.id}/setting/${status}`
+        this.$http.send(url, {}, 'patch').then(res => {
+          this.$message.success('操作成功~')
+          this.getSkuList()
+        }).catch(res => {
+          this.$message.error(res.msg)
+        })
+      })
+    },
+    handleSKUList(row) { //查看SKU列表
+      this.showSkuDialog = true
+      this.spuName = row.name
+      this.spuId = row.id
+      this.getSkuList()
+    },
+    getSkuList() {
+      var url = `${this.$api.sku}/spu/${this.spuId}`
+      this.$http.send(url, {}, 'get').then(res => {
+        console.log(res)
+        this.skuDataTable.data = res.data
+        // this.skuDataTable.data.forEach(item => {
+        //   item.attribute = this.getAttribute(item.attribute)
+        // })
+      }).catch(res => {
+        this.$message.error(res.msg)
+      })
+    },
+    getAttribute(str) {
+      var obj = JSON.parse(str)
+      var arr = []
+      for (var i in obj) {
+        arr.push(`${[i]}：${obj[i]}`)
+      }
+      var key = arr.join(',')
+      console.log(key, 'key===')
+      return key
     },
     handleBatchStatus(type) {
       if (this.checkBox.length === 0) {

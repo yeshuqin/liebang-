@@ -29,7 +29,7 @@
       >
         <template slot="picUrl" slot-scope="props">
           <span v-if="!props.obj.row.picUrl">暂无图片</span>
-          <img v-else :src="props.obj.row.picUrl" alt="">
+          <img v-else class="picUrl" :src="props.obj.row.picUrl" alt="">
         </template>
         <template slot="useStatus" slot-scope="props">
           <span>{{ props.obj.row.useStatus === 0 ? '未上线' : '已生效' }}</span>
@@ -45,7 +45,7 @@
     </div>
     <!-- 新增橱窗配置 -->
     <el-dialog title="新增橱窗配置" :visible.sync="showAddDialog" custom-class="add_dialog" width="800px" center>
-      <el-form ref="ruleForm" :model="addObj" :rules="rules" size="small" label-width="120px">
+      <el-form ref="ruleForm" :model="addObj" size="small" label-width="120px">
         <el-form-item label="橱窗编码:" required>
           <el-input v-model.trim="addObj.code" clearable placeholder="请输入橱窗编码" />
         </el-form-item>
@@ -65,16 +65,8 @@
           <el-input v-model.trim="addObj.linkUrl" clearable placeholder="请输入配置链接" />
         </el-form-item>
         <el-form-item label="广告内容:">
-          <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple
-            :limit="3"
-            :file-list="fileList"
-          >
-            <el-button size="small" type="primary">图片上传</el-button>
-            <span slot="tip" class="el-upload__tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</span>
-          </el-upload>
+          <Upload :limit="1" @handleSuccess="handleSuccessUpload" @handleRemove="handleRemove" />
+          <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -87,6 +79,7 @@
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+import Upload from '@/components/Upload/index'
 var addObj = {
   id: '',
   code: '',
@@ -96,7 +89,8 @@ var addObj = {
 }
 export default {
   components: {
-    tlTable
+    tlTable,
+    Upload
   },
   data() {
     return {
@@ -181,18 +175,8 @@ export default {
           ]
         }
       },
-      rules: {
-        code: [
-          { required: true, message: '请输入橱窗编码', trigger: 'blur' }
-        ],
-        name: [
-          { required: true, message: '请输入橱窗名称', trigger: 'blur' },
-          { min: 3, max: 5, message: '长度不能超过50个汉字', trigger: 'blur' }
-        ]
-      },
       addObj: {},
-      showAddDialog: false,
-      fileList: []
+      showAddDialog: false
     }
   },
   created() {
@@ -239,7 +223,7 @@ export default {
       this.showAddDialog = true
     },
     handleSet(row) {
-      this.$router.push({ name: 'ConfigGoods' })
+      this.$router.push({ name: 'ConfigGoods', query: { id: row.id }})
     },
     handleDel(row) {
       this.$confirm('此操作将删除橱窗, 是否继续?', '提示', {
@@ -257,19 +241,31 @@ export default {
       })
     },
     handleSumbitSave() {
-      this.$refs['ruleForm'].validate((valid) => {
-        if (valid) {
-          this.$http.send(this.$api.showcase, this.addObj, 'post').then(res => {
-            this.$message.success('操作成功')
-            this.showAddDialog = false
-            this.getInfor()
-          }).catch(res => {
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+      if (!this.addObj.code) {
+        this.$message.error('请输入橱窗编码~')
+        return
+      }
+      if (!this.addObj.name) {
+        this.$message.error('请输入橱窗名称~')
+        return
+      }
+      if (this.addObj.name.length > 50) {
+        this.$message.error('橱窗名称长度不能超过50个汉字~')
+        return
+      }
+      this.$http.send(this.$api.showcase, this.addObj, 'post').then(res => {
+        this.$message.success('操作成功')
+        this.showAddDialog = false
+        this.getInfor()
+      }).catch(res => {
+        this.$message.error(res.message)
       })
+    },
+    handleSuccessUpload(file, fileList) {
+      this.addObj.picUrl = file.data
+    },
+    handleRemove(file, fileList) {
+      this.addObj.picUrl = ''
     },
     pageChange(page) {
       this.dataTable.page = page
@@ -285,9 +281,6 @@ export default {
 
 <style lang="scss" scoped>
 .add_dialog {
-  .el-input, .el-select {
-    width: 70%;
-  }
   .line {
     text-align: center;
   }

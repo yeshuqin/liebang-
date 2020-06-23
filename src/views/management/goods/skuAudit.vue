@@ -44,7 +44,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    <el-card class="box-card">
+    <el-card class="box-card mb20">
       <div slot="header" class="clearfix">
         <span>SKU设置</span>
       </div>
@@ -75,6 +75,10 @@
         </template>
       </tl-table>
     </el-card>
+    <div>
+      <el-button type="primary" size="small" @click="handleSumbitSave">确 定</el-button>
+      <el-button size="small" @click="handleGoBack">返 回</el-button>
+    </div>
   </div>
 </template>
 
@@ -86,6 +90,7 @@ export default {
   },
   data() {
     return {
+      spuId: this.$route.query.spuId,
       skuNmae: '', //sku前缀
       attrName: '', //属性名
       attrValue: '', //属性值
@@ -147,7 +152,34 @@ export default {
       salePrice: '', // 销售价
       checkBox: [],
       attrKey: [],
-      skuDataMap: {}
+      skuDataMap: {},
+      skuDataList: {}
+    }
+  },
+  watch: {
+    'tableData': {
+      handler() {
+        this.skuDataList = {}
+        this.tableData.forEach((item, index) => {
+          if (item.list.length > 0) {
+            this.skuDataList[item.name] = []
+            item.list.forEach(sku => {
+              this.skuDataList[item.name].push(item.name + '：' + sku)
+            })
+          }
+        })
+        var values = Object.values(this.skuDataList)
+        if (values.length > 1) {
+          this.getSku(values)
+        } else if (values.length === 1) {
+          this.result = values[0]
+        } else {
+          this.result = []
+        }
+        this.updateSku()
+        // console.log(this.result, 'result')
+      },
+      deep: true
     }
   },
   mounted() {
@@ -161,6 +193,18 @@ export default {
     }, false)
   },
   methods: {
+    getSku(arr) {
+      var reslut = arr.reduce((last, current) => {
+        const array = []
+        last.forEach(par1 => {
+          current.forEach(par2 => {
+            array.push(par1 + ',' + par2)
+          })
+        })
+        return array
+      })
+      this.result = reslut
+    },
     handleAddAttrName() { //新增sku属性名
       this.showAttrName = true
     },
@@ -191,67 +235,33 @@ export default {
       if (this.attrValue !== '' && !item.list.includes(this.attrValue)) {
         //属性值不能重复
         item.list.push(this.attrValue)
-        this.updateSku()
       }
       this.showAttrIndex = -1
       this.attrValue = ''
     },
-    handleDelAttr(item) { //删除sku属性值
+    handleDelAttr(item) { //删除sku属性名
       this.tableData.splice(item.index, 1)
-      if (this.tableData.length === 0) {
-        this.result = []
-        this.skuDataTable.data = []
-      } else {
-        this.updateSku()
-      }
     },
     onHandleSelectionChange(val) {
       this.checkBox = val
     },
-    getResult(obj, listIndex, list, id, info) {
-      for (let index = 0; index < list[listIndex][info].length; index++) {
-        obj[list[listIndex][id]] = list[listIndex][info][index]
-        if (listIndex < list.length - 1) {
-          if (list[listIndex + 1][info].length > 0) {
-            this.getResult(obj, listIndex + 1, list, id, info)
-          } else {
-            this.result.push(JSON.parse(JSON.stringify(obj)))
-          }
-        } else {
-          this.result.push(JSON.parse(JSON.stringify(obj)))
-        }
-      }
-    },
     updateSku() {
-      this.result = []
-      this.getResult({}, 0, this.tableData, 'name', 'list')
-      console.log(this.result, 'result')
-      this.attrKey = []
-      this.result.forEach(item => {
-        var str = []
-        for (var i in item) {
-          str.push(`${[i]}：${item[i]}`)
-        }
-        var key = str.join(',')
-        this.attrKey.push(key)
-      })
       var data = JSON.parse(JSON.stringify(this.skuDataTable.data))
       this.skuDataMap = {}
       data.forEach(sku => {
         this.skuDataMap[sku.name] = sku
       })
-      // console.log(this.skuDataMap, 'skuDataMap===')
       this.getSkuList()
     },
     getSkuList() { //更新sku表格
-      // console.log(this.result, 'this.result==')
       this.skuDataTable.data = []
-      this.attrKey.forEach(item => {
+      this.result.forEach(item => {
         var obj = this.skuDataMap[item] || {
-          attribute: '',
+          attribute: this.getAttribute(item),
           costPrice: '',
           marketPrice: '',
           salePrice: '',
+          id: '',
           spuId: '',
           name: item
         }
@@ -264,6 +274,32 @@ export default {
         item.marketPrice = this.marketPrice ? this.marketPrice : item.marketPrice
         item.salePrice = this.salePrice ? this.salePrice : item.salePrice
       })
+    },
+    getAttribute(str) {
+      var arr = str.split(',')
+      var obj = {}
+      arr.forEach(item => {
+        var keyArr = item.split('：')
+        obj[keyArr[0]] = keyArr[1]
+      })
+      return JSON.stringify(obj)
+    },
+    handleSumbitSave() {
+      var params = {
+        spuId: this.spuId,
+        skuList: this.skuDataTable.data
+      }
+      console.log(params)
+      this.$http.send(this.$api.sku, params, 'post').then(res => {
+        this.$message.success('操作成功~')
+        this.$router.push({ name: 'Goods' })
+        this.getInfor()
+      }).catch(res => {
+        this.$message.error(res.msg)
+      })
+    },
+    handleGoBack() {
+      this.$router.push({ name: 'Goods' })
     },
     tableRowClassName({ row, rowIndex }) {
       //把每一行的索引放进row

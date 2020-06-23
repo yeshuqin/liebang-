@@ -43,8 +43,8 @@
       </tl-table>
     </div>
     <!-- 新增广告 -->
-    <el-dialog title="新增广告配置" :visible.sync="showAddDialog" custom-class="add_dialog" width="800px" center>
-      <el-form ref="ruleForm" :model="addObj" :rules="rules" label-width="120px" size="small">
+    <el-dialog title="新增广告配置" :visible.sync="showAddDialog" custom-class="add_dialog" width="600px" center>
+      <el-form ref="ruleForm" :model="addObj" label-width="120px" size="small">
         <el-form-item label="广告编码:" required>
           <el-input v-model.trim="addObj.code" clearable placeholder="请输入广告编码" />
         </el-form-item>
@@ -65,17 +65,7 @@
           <el-input v-model.trim="addObj.linkUrl" clearable placeholder="请输入配置链接" />
         </el-form-item>
         <el-form-item label="广告内容:" required>
-          <!-- <el-upload
-            class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            multiple
-            :limit="3"
-            :file-list="fileList"
-          >
-            <el-button size="small" type="primary">图片上传</el-button>
-            <span slot="tip" class="el-upload__tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</span>
-          </el-upload> -->
-          <Upload :limit="1" @handleSuccess="handleSuccessUpload" />
+          <Upload :limit="1" @handleSuccess="handleSuccessUpload" @handleRemove="handleRemove" />
           <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
         </el-form-item>
       </el-form>
@@ -94,7 +84,7 @@ var addObj = {
   name: '',
   code: '',
   linkUrl: '',
-  picUrl: 'https://www.baidu.com/img/PCfb_5bf082d29588c07f842ccde3f97243ea.png'
+  picUrl: ''
 }
 export default {
   components: {
@@ -130,6 +120,7 @@ export default {
           {
             label: '广告内容',
             prop: 'picUrl',
+            width: '150px',
             slot: true,
             init: '—'
           },
@@ -172,18 +163,8 @@ export default {
           ]
         }
       },
-      rules: {
-        code: [
-          { required: true, message: '请输入广告编码', trigger: 'blur' }
-        ],
-        name: [
-          { required: true, message: '请输入广告名称', trigger: 'blur' },
-          { min: 3, max: 5, message: '长度不能超过50个汉字', trigger: 'blur' }
-        ]
-      },
       addObj: {},
-      showAddDialog: false,
-      fileList: []
+      showAddDialog: false
     }
   },
   created() {
@@ -248,22 +229,36 @@ export default {
       })
     },
     handleSumbitSave() {
-      this.$refs['ruleForm'].validate((valid) => {
-        if (valid) {
-          this.$http.send(this.$api.banner, this.addObj, 'post').then(res => {
-            this.$message.success('操作成功')
-            this.showAddDialog = false
-            this.getInfor()
-          }).catch(res => {
-          })
-        } else {
-          console.log('error submit!!')
-          return false
-        }
+      if (!this.addObj.code) {
+        this.$message.error('请输入广告编码~')
+        return
+      }
+      if (!this.addObj.name) {
+        this.$message.error('请输入广告名称~')
+        return
+      }
+      if (this.addObj.name.length > 50) {
+        this.$message.error('广告名称长度不能超过50个汉字~')
+        return
+      }
+      if (!this.addObj.picUrl) {
+        this.$message.error('请上传图片~')
+        return
+      }
+      this.$http.send(this.$api.banner, this.addObj, 'post').then(res => {
+        this.$message.success('操作成功')
+        this.showAddDialog = false
+        this.getInfor()
+      }).catch(res => {
+        this.$message.error(res.message)
       })
     },
     handleSuccessUpload(file, fileList) {
-      console.log(file, fileList)
+      this.addObj.picUrl = file.data
+      console.log(file, fileList, '广告位~~')
+    },
+    handleRemove(file, fileList) {
+      this.addObj.picUrl = ''
     },
     pageChange(page) {
       this.dataTable.page = page
@@ -279,9 +274,6 @@ export default {
 
 <style lang="scss" scoped>
 .add_dialog {
-  .el-input, .el-select {
-    width: 70%;
-  }
   .line {
     text-align: center;
   }

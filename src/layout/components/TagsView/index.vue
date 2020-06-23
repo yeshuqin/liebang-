@@ -55,7 +55,7 @@ export default {
     }
   },
   mounted() {
-    this.initTags()
+    // this.initTags()
     this.addTags()
   },
   methods: {
@@ -97,6 +97,7 @@ export default {
     },
     addTags() {
       const { name } = this.$route
+      console.log(name, 'name')
       if (name) {
         this.$store.dispatch('tagsView/addView', this.$route)
       }

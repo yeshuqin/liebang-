@@ -5,18 +5,20 @@
       name="image"
       :on-preview="handlePictureCardPreview"
       :on-remove="handleRemove"
+      :on-error="handleError"
       :on-success="handleSuccess"
       :show-file-list="showFileList"
       :before-upload="beforeAvatarUpload"
       :on-exceed="handleExceed"
-      :file-list="fileList"
+      :file-list="filelist"
       :limit="limit"
+      list-type="picture-card"
     >
-      <!-- <i class="el-icon-plus" /> -->
-      <el-button size="small" type="primary">上传图片</el-button>
+      <img v-if="imageUrl" :src="imageUrl" class="avatar">
+      <i v-else class="el-icon-plus" />
     </el-upload>
-    <el-dialog :visible.sync="dialogVisible" width="400px">
-      <img width="100%" :src="dialogImageUrl" alt="">
+    <el-dialog :visible.sync="dialogVisible" width="400px" :append-to-body="true">
+      <img width="100%" :src="dialogImageUrl">
     </el-dialog>
   </div>
 </template>
@@ -32,11 +34,15 @@ export default {
       type: Number,
       default: 1
     },
-    fileList: {
+    filelist: {
       type: Array,
       default() {
         return []
       }
+    },
+    imageUrl: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -50,22 +56,28 @@ export default {
       this.dialogImageUrl = file.url
       this.dialogVisible = true
     },
-    handleRemove() {},
+    handleRemove(file, fileList) {
+      this.$emit('handleRemove', file, fileList)
+    },
+    handleError(err) {
+      console.log(err)
+    },
     handleSuccess(response, file, fileList) {
       this.$emit('handleSuccess', response, file, fileList)
     },
     beforeAvatarUpload(file) {
       // this.$emit('beforeAvatarUpload')
-      const isJPG = file.type === 'image/jpeg'
+      const typeArr = ['image/gif', 'image/jpeg', 'image/jpg', 'image/png']
+      const isType = typeArr.includes(file.type)
       const isLt1M = file.size / 1024 / 1024 < 1
 
-      if (!isJPG) {
-        this.$message.error('上传头像图片只能是 JPG 格式!')
+      if (!isType) {
+        this.$message.error('上传头像图片只能是 png,jpg,jpeg,gif 格式!')
       }
       if (!isLt1M) {
         this.$message.error('上传头像图片大小不能超过 1MB!')
       }
-      return isJPG && isLt1M
+      return isType && isLt1M
     },
     handleExceed(files, fileList) {
       if (this.limit === 1) {
@@ -78,4 +90,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.avatar{
+  width: 150px;
+  height: 150px;
+  border-radius: 6px;
+}
 </style>

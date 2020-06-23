@@ -125,7 +125,7 @@ export const constantRoutes = [
             path: 'spuAudit',
             name: 'GoodsSpuAudit',
             hidden: true,
-            meta: { activeMenu: '/management/goods', title: 'spu编辑' },
+            meta: { activeMenu: '/management/goods', title: 'spu编辑', hiddenTags: true },
             component: () => import('@/views/management/goods/spuAudit.vue')
           }
         ]
