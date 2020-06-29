@@ -29,7 +29,7 @@ Vue.prototype.$http = http
 Vue.prototype.$api = api
 
 import '@/icons'
-// import '@/permission'
+import '@/permission'
 
 Vue.use(ElementUI)
 

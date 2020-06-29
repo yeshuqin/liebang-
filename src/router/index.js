@@ -9,6 +9,7 @@ import Layout from '@/layout'
 export const constantRoutes = [
   {
     path: '/login',
+    name: 'login',
     component: () => import('@/views/login/index'),
     hidden: true
   },
@@ -41,7 +42,7 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/operate/adList',
     name: 'Operate',
-    meta: { title: '运营', icon: 'example' },
+    meta: { title: '运营', icon: '&#xe620;' },
     children: [
       {
         path: 'adList',
@@ -68,7 +69,7 @@ export const constantRoutes = [
             name: 'ConfigGoods',
             hidden: true,
             component: () => import('@/views/operate/shopwindow/configList'),
-            meta: { title: '配置商品' }
+            meta: { activeMenu: '/operate/show', title: '配置商品' }
           }
         ]
       }
@@ -80,7 +81,7 @@ export const constantRoutes = [
     component: Layout,
     redirect: '/management/userList',
     name: 'Management',
-    meta: { title: '管理', icon: 'example' },
+    meta: { title: '管理', icon: '&#xe647;' },
     children: [
       // {
       //   path: 'userList',
@@ -118,15 +119,22 @@ export const constantRoutes = [
             path: 'skuAudit',
             name: 'GoodsSkuAudit',
             hidden: true,
-            meta: { activeMenu: '/management/goods', title: 'sku编辑' },
+            meta: { activeMenu: '/management/goods', title: 'sku编辑', noCache: true },
             component: () => import('@/views/management/goods/skuAudit.vue')
           },
           {
             path: 'spuAudit',
             name: 'GoodsSpuAudit',
             hidden: true,
-            meta: { activeMenu: '/management/goods', title: 'spu编辑', hiddenTags: true },
+            meta: { activeMenu: '/management/goods', title: 'spu编辑', hiddenTags: true, noCache: true},
             component: () => import('@/views/management/goods/spuAudit.vue')
+          },
+          {
+            path: 'spuAdd',
+            name: 'GoodsSpuAdd',
+            hidden: true,
+            meta: { activeMenu: '/management/goods', title: 'spu新增', hiddenTags: true, noCache: true},
+            component: () => import('@/views/management/goods/spuAdd.vue')
           }
         ]
       }

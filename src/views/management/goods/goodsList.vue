@@ -67,7 +67,6 @@
         @handleEdit="handleEdit"
         @handleSKUList="handleSKUList"
         @handleStatus="handleStatus"
-        @handleAddSKU="handleAddSKU"
       >
         <template slot="primaryPic" slot-scope="props">
           <span v-if="!props.obj.row.primaryPic">暂无图片</span>
@@ -117,6 +116,7 @@
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
 export default {
+  name: 'GoodsList',
   components: {
     tlTable
   },
@@ -219,10 +219,6 @@ export default {
             {
               label: '删除',
               Fun: 'handleDel'
-            },
-            {
-              label: '新增SKU',
-              Fun: 'handleAddSKU'
             }
           ]
         }
@@ -350,14 +346,9 @@ export default {
       this.getInfor()
     },
     handleAddSpu(row) { // 新增spu
-      this.$router.push({ name: 'GoodsSpuAudit', query: { spuId: row.id }})
+      this.$router.push({ name: 'GoodsSpuAdd'})
     },
-    handleAddSKU(row) { // 新增sku
-      this.$router.push({ name: 'GoodsSkuAudit', query: { spuId: row.id }})
-    },
-    handleSubmit() {
-    },
-    handleEdit(row) {
+    handleEdit(row) { // 编辑spu
       this.$router.push({ name: 'GoodsSpuAudit', query: { id: row.id }})
     },
     handleDel(row) {

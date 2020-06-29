@@ -1,10 +1,10 @@
 <template>
   <div class="sku_wrapper">
-    <el-form label-width="100px" class="mb20">
-      <el-form-item label="SKU前缀：" required>
+    <!-- <el-form label-width="100px" class="mb20">
+      <el-form-item label="SKU前缀：" required>
         <el-input v-model="skuNmae" size="small" style="width:300px" />
       </el-form-item>
-    </el-form>
+    </el-form> -->
     <el-card class="box-card mb20">
       <div slot="header" class="clearfix">
         <span>属性设置</span>
@@ -19,13 +19,13 @@
         >
           <template slot="header" slot-scope="scope">
             属性名
-            <el-button v-show="!showAttrName" type="primary" size="mini" icon="el-icon-plus" circle @click.stop="handleAddAttrName" />
+            <el-button v-show="!showAttrName && !isEdit" type="primary" size="mini" icon="el-icon-plus" circle @click.stop="handleAddAttrName" />
             <el-input v-show="showAttrName" v-model.trim="attrName" size="mini" class="add_input" @blur.stop="changeAttrName(scope.row)" />
           </template>
           <template slot-scope="scope">
             <el-row>
               <el-col :span="4">
-                <el-button type="danger" size="mini" icon="el-icon-delete" circle @click="handleDelAttr(scope.row)" />
+                <el-button type="danger" size="mini" icon="el-icon-delete" v-if="!isEdit" circle @click="handleDelAttr(scope.row)" />
               </el-col>
               <el-col :span="20">
                 <el-input v-model="scope.row.name" size="mini" placeholder="输入关键字搜索" disabled class="add_input" />
@@ -39,7 +39,10 @@
           <template slot-scope="scope">
             <el-input v-for="(name, index) in scope.row.list" :key="index" :value="name" size="mini" disabled class="tag" />
             <el-input v-if="showAttrIndex === scope.row.index" v-model.trim="attrValue" size="mini" class="add_input" @blur.stop="changeAttrVal(scope.row)" />
-            <el-button v-else type="primary" size="mini" icon="el-icon-plus" circle @click.stop="handleAttrValue(scope.row)" />
+            <span v-else>
+              <el-button  v-if="!isEdit" type="primary" size="mini" icon="el-icon-plus" circle @click.stop="handleAttrValue(scope.row)" />
+            </span>
+            
           </template>
         </el-table-column>
       </el-table>
@@ -75,10 +78,10 @@
         </template>
       </tl-table>
     </el-card>
-    <div>
+    <!-- <div>
       <el-button type="primary" size="small" @click="handleSumbitSave">确 定</el-button>
       <el-button size="small" @click="handleGoBack">返 回</el-button>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -87,6 +90,18 @@ import tlTable from '@/components/BaseTable/tlTable'
 export default {
   components: {
     tlTable
+  },
+  props: {
+    dataList: {
+      type: Array,
+      default() {
+        return []
+      }
+    },
+    isEdit: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
@@ -159,6 +174,9 @@ export default {
   watch: {
     'tableData': {
       handler() {
+        if(this.isEdit) {
+          return
+        }
         this.skuDataList = {}
         this.tableData.forEach((item, index) => {
           if (item.list.length > 0) {
@@ -180,6 +198,31 @@ export default {
         // console.log(this.result, 'result')
       },
       deep: true
+    },
+    'dataList': {
+      handler() {
+        this.skuDataTable.data = this.dataList
+        let ObjMap = {}
+        this.dataList.forEach(item => {
+          let obj = JSON.parse(item.attribute)
+          for(let i in obj) {
+            if(!(ObjMap[i] instanceof Array)) {
+               ObjMap[i] = []
+            }
+            if(!ObjMap[i].includes(obj[i])) {
+              ObjMap[i].push(obj[i])
+            }
+          }
+        })
+        console.log(ObjMap)
+        for(let attr in ObjMap) {
+          this.tableData.push({
+          name: attr,
+          list: ObjMap[attr]
+        })
+        }
+        
+      }
     }
   },
   mounted() {
@@ -207,6 +250,9 @@ export default {
     },
     handleAddAttrName() { //新增sku属性名
       this.showAttrName = true
+       this.attrNameArr = this.tableData.map(item => {
+        return item.name
+      })
     },
     changeAttrName() {
       this.showAttrName = false
@@ -222,9 +268,6 @@ export default {
       } else {
         this.$message.error('属性名不能重复')
       }
-      this.attrNameArr = this.tableData.map(item => {
-        return item.name
-      })
       this.attrName = ''
     },
     handleAttrValue(item) { //新增sku属性值
@@ -285,18 +328,18 @@ export default {
       return JSON.stringify(obj)
     },
     handleSumbitSave() {
-      var params = {
-        spuId: this.spuId,
-        skuList: this.skuDataTable.data
-      }
-      console.log(params)
-      this.$http.send(this.$api.sku, params, 'post').then(res => {
-        this.$message.success('操作成功~')
-        this.$router.push({ name: 'Goods' })
-        this.getInfor()
-      }).catch(res => {
-        this.$message.error(res.msg)
-      })
+      // var params = {
+      //   spuId: this.spuId,
+      //   skuList: this.skuDataTable.data
+      // }
+      return this.skuDataTable.data
+      // this.$http.send(this.$api.sku, params, 'post').then(res => {
+      //   this.$message.success('操作成功~')
+      //   this.$router.push({ name: 'Goods' })
+      //   this.getInfor()
+      // }).catch(res => {
+      //   this.$message.error(res.msg)
+      // })
     },
     handleGoBack() {
       this.$router.push({ name: 'Goods' })

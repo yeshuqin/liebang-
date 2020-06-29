@@ -1,11 +1,11 @@
 <template>
   <div class="navbar">
-    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+    <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
 
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <span class="el-icon-view logout" @click="logout" />
+      <span class="iconfont logout" @click="handleLogout">&#xe659;</span>
     </div>
   </div>
 </template>
@@ -30,9 +30,18 @@ export default {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
-    async logout() {
-      await this.$store.dispatch('user/logout')
-      this.$router.push(`/login?redirect=${this.$route.fullPath}`)
+    handleLogout() {
+      this.$confirm('是否退出登录?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          localStorage.removeItem('token')
+          this.$router.push({name: 'login'})
+          this.$message.success('退出成功')
+        }).catch(() => {
+                   
+        });
     }
   }
 }
