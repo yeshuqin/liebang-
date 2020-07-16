@@ -11,7 +11,8 @@
     <el-submenu v-else ref="subMenu" :index="resolvePath(item.path)" popper-append-to-body>
       <template slot="title">
         <!-- <item v-if="item.meta" :icon="item.meta && item.meta.icon" :title="item.meta.title" />  -->
-        <span><span class="iconfont" v-html="item.meta &&item.meta.icon" style="margin-right:10px"></span>{{item.meta.title}}</span>
+        <i class="iconfont" v-html="item.meta &&item.meta.icon"></i>
+        <span>{{item.meta.title}}</span>
       </template>
       <sidebar-item
         v-for="child in item.children"
@@ -89,3 +90,18 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+  .el-submenu__title {
+    text-align: left;
+    .iconfont {
+      color: #ffffff !important;
+      font-size: 18px;
+    }
+  }
+  .el-menu--collapse {
+    .el-submenu__title {
+      text-align: center;
+    }
+  }
+</style>

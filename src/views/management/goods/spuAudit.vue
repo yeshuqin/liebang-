@@ -398,8 +398,7 @@ export default {
       if(skuList.length === 0) {
         this.$message.error('至少新增一条sku属性~')
         return
-      }
-      
+      }      
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
         picList: this.picListList.join(','),

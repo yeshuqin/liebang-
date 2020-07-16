@@ -103,18 +103,19 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
+          let password = md5(this.loginForm.password)
           this.loading = true
-          // this.$store.dispatch('user/login', this.loginForm).then(() => {
-          //   this.$router.push({ path: this.redirect || '/' })
-          //   this.loading = false
-          // }).catch(() => {
-          //   this.loading = false
-          // })
-          setTimeout(()=> {
-            localStorage.setItem('token', '123456789')
-            this.$router.push({name: 'Operate'})
+          this.$http.send(this.$api.login, {
+            username: this.loginForm.username,
+            password
+          }, 'patch').then(res => {
+             this.loading = false
+             this.$store.dispatch('user/login',res.data)
+             this.$router.push({name: 'Operate'})
+          }).catch(res => {
             this.loading = false
-          },1000)
+            this.$message.error(res.msg+'11')
+          })
         } else {
           return false
         }

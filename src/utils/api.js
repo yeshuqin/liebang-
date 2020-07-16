@@ -1,10 +1,13 @@
-const baseUrl = 'http://120.92.79.156:8080/'
+
 export default {
-  addCate: baseUrl + 'cate',
-  showcase: baseUrl + 'showcase',
-  showcaseSpu: baseUrl + 'showcase/spu',
-  banner: baseUrl + 'banner',
-  spu: baseUrl + 'spu',
-  sku: baseUrl + 'sku',
-  upload: baseUrl + 'upload/image'
+  addCate: 'cate',
+  showcase: 'showcase',
+  showcaseSpu: 'showcase/spu',
+  banner: 'banner',
+  spu: 'spu',
+  sku: 'sku',
+  upload: '/admin/upload/image',
+  account: 'account',
+  login: 'account/login',
+  logout: 'account/logout'
 }

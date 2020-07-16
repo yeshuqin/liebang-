@@ -4,9 +4,6 @@
       <el-form-item v-if="isEdit" label="商品ID：" required>
         <el-input v-model="spuForm.id" clearable filterable disabled placeholder="请输入商品ID" />
       </el-form-item>
-      <el-form-item label="商品名称：" required>
-        <el-input v-model="spuForm.name" clearable filterable placeholder="请输入商品名称" />
-      </el-form-item>
       <el-form-item label="一级类别：" required>
         <el-select v-model="spuForm.cateId" clearable filterable placeholder="请选择">
           <el-option
@@ -16,6 +13,9 @@
             :value="item.id"
           />
         </el-select>
+      </el-form-item>
+      <el-form-item label="服务类型：" required>
+        <el-input v-model="spuForm.name" clearable filterable placeholder="请输入服务类型" />
       </el-form-item>
       <el-form-item label="标签：" required>
         <el-tag
@@ -373,7 +373,7 @@ export default {
     handleSumbitSpu() {
       let skuList = this.$refs.sku.handleSumbitSave()
       if (!this.spuForm.name) {
-        this.$message.error('请输入商品名称')
+        this.$message.error('请输入服务类型')
         return
       }
       if (!this.spuForm.cateId) {

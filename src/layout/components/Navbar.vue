@@ -1,11 +1,24 @@
 <template>
   <div class="navbar">
-    <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
+    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
 
     <breadcrumb class="breadcrumb-container" />
 
     <div class="right-menu">
-      <span class="iconfont logout" @click="handleLogout">&#xe659;</span>
+      
+       <el-dropdown trigger="click">
+          <span class="el-dropdown-link">
+            <span class="logout">{{name}}</span>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item>
+              <span @click="handleLogout">退出</span> 
+            </el-dropdown-item>
+            <el-dropdown-item>
+              <span @click="handlePwd">修改密码</span>
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
     </div>
   </div>
 </template>
@@ -23,7 +36,7 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'name'
     ])
   },
   methods: {
@@ -32,16 +45,22 @@ export default {
     },
     handleLogout() {
       this.$confirm('是否退出登录?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
         }).then(() => {
-          localStorage.removeItem('token')
-          this.$router.push({name: 'login'})
-          this.$message.success('退出成功')
+          this.$http.send(this.$api.logout, {}, 'patch').then(res => {
+            this.$store.dispatch('/user/logout')
+            localStorage.removeItem('token')
+            this.$router.push({name: 'login'})
+            this.$message.success('退出成功')
+          })
         }).catch(() => {
                    
         });
+    },
+    handlePwd() {
+      this.$router.push({path: '/changePwd'})
     }
   }
 }
@@ -55,7 +74,7 @@ export default {
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
   .logout {
-    padding-right: 20px;
+    padding-right: 40px;
     cursor: pointer;
     font-size: 16px;
   }

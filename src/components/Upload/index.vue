@@ -6,6 +6,7 @@
       :on-preview="handlePictureCardPreview"
       :on-remove="handleRemove"
       :on-error="handleError"
+      :headers="headers"
       :on-success="handleSuccess"
       :show-file-list="showFileList"
       :before-upload="beforeAvatarUpload"
@@ -48,7 +49,10 @@ export default {
   data() {
     return {
       dialogImageUrl: '',
-      dialogVisible: false
+      dialogVisible: false,
+      headers: {
+        token: localStorage.getItem('token')
+      }
     }
   },
   methods: {
@@ -63,10 +67,19 @@ export default {
       console.log(err)
     },
     handleSuccess(response, file, fileList) {
-      this.$emit('handleSuccess', response, file, fileList)
+      if(response.code === 0) {
+        this.$emit('handleSuccess', response, file, fileList)
+      }else {
+         if (response.code === 40001) {
+            this.$store.dispatch('user/resetToken').then(() => {
+              location.reload()
+            })
+         }
+        this.$message.error(response.msg, 5000)
+      }
+      
     },
     beforeAvatarUpload(file) {
-      // this.$emit('beforeAvatarUpload')
       const typeArr = ['image/gif', 'image/jpeg', 'image/jpg', 'image/png']
       const isType = typeArr.includes(file.type)
       const isLt1M = file.size / 1024 / 1024 < 1

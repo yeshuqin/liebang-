@@ -80,6 +80,7 @@ export default {
           {
             label: '图片',
             prop: 'picUrl',
+            width: '120px',
             slot: true,
             init: '—'
           },
@@ -116,6 +117,8 @@ export default {
   },
   created() {
     this.getInfor()
+  },
+  width: {
   },
   methods: {
     getInfor() {
@@ -156,7 +159,9 @@ export default {
     handleAdd() {
       this.addObj = Object.assign({}, addObj)
       this.filelist = []
-      this.showCategoryDialog = true
+      setTimeout(() => {
+        this.showCategoryDialog = true
+      }, 500)
     },
     handleEdit(row) {
       this.addObj = Object.assign({}, addObj, {

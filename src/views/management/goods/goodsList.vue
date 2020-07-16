@@ -151,11 +151,6 @@ export default {
         expands: [],
         tr: [
           {
-            label: '商品名称',
-            prop: 'name',
-            init: '-'
-          },
-          {
             label: '商品ID',
             prop: 'id',
             init: '-'
@@ -163,6 +158,11 @@ export default {
           {
             label: '一级类别',
             prop: 'cateName',
+            init: '-'
+          },
+          {
+            label: '服务类型',
+            prop: 'name',
             init: '-'
           },
           {

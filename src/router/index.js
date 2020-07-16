@@ -45,6 +45,20 @@ export const constantRoutes = [
     meta: { title: '运营', icon: '&#xe620;' },
     children: [
       {
+        path: '/user',
+        name: 'user',
+        component: () => import('@/views/user/user'),
+        meta: { title: '新增账户' },
+        hidden: true
+      },
+      {
+        path: '/changePwd',
+        name: 'changePwd',
+        component: () => import('@/views/user/changePwd'),
+        meta: { title: '修改密码' },
+        hidden: true
+      },
+      {
         path: 'adList',
         name: 'AdList',
         component: () => import('@/views/operate/ad/adList'),
@@ -83,24 +97,24 @@ export const constantRoutes = [
     name: 'Management',
     meta: { title: '管理', icon: '&#xe647;' },
     children: [
-      // {
-      //   path: 'userList',
-      //   name: 'UserList',
-      //   component: () => import('@/views/management/user/userList'),
-      //   meta: { title: '用户管理' }
-      // },
+      {
+        path: 'userList',
+        name: 'UserList',
+        component: () => import('@/views/management/user/userList'),
+        meta: { title: '用户管理' }
+      },
       {
         path: 'categoryList',
         name: 'categoryList',
         component: () => import('@/views/management/category/categoryList'),
         meta: { title: '类别管理' }
       },
-      // {
-      //   path: 'orderList',
-      //   name: 'OrderList',
-      //   component: () => import('@/views/management/order/orderList'),
-      //   meta: { title: '订单管理' }
-      // },
+      {
+        path: 'orderList',
+        name: 'OrderList',
+        component: () => import('@/views/management/order/orderList'),
+        meta: { title: '订单管理' }
+      },
       {
         path: 'goods',
         name: 'Goods',

@@ -29,7 +29,7 @@
     </div>
     <!-- 编辑用户 -->
     <el-dialog title="编辑用户" :visible.sync="showEditDialog" custom-class="add_dialog" width="800px" center>
-      <el-form :model="addObj" label-width="120px">
+      <el-form :model="addObj" size="small" label-width="120px">
         <el-form-item label="企业名称:" required>
           <el-input v-model.trim="addObj.name" clearable placeholder="请输入企业名称" />
         </el-form-item>
@@ -50,8 +50,8 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSumbitAdd">提 交</el-button>
-        <el-button @click="showEditDialog = false">返 回</el-button>
+        <el-button type="primary" size="small" @click="handleSumbitAdd">提 交</el-button>
+        <el-button size="small" @click="showEditDialog = false">返 回</el-button>
       </div>
     </el-dialog>
   </div>

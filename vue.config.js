@@ -18,7 +18,7 @@ module.exports = {
    * In most cases please use '/' !!!
    * Detail: https://cli.vuejs.org/config/#publicpath
    */
-  publicPath: '/',
+  publicPath: './',
   outputDir: 'dist',
   assetsDir: 'static',
   // lintOnSave: process.env.NODE_ENV === 'development',
@@ -30,6 +30,16 @@ module.exports = {
     overlay: {
       warnings: false,
       errors: true
+    },
+    proxy: {
+      '/admin': {
+        target: 'http://120.92.79.156',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          "^/admin": "http://localhost:9528/admin"//自定义
+        }
+      }
     }
   },
   configureWebpack: {

@@ -35,13 +35,14 @@
           </el-form-item>
           <el-form-item>
             <el-button v-if="activeName !== 'first'" type="primary" size="small" @click="handleBatchStatus(0)">批量添加</el-button>
-            <el-button v-else type="danger" size="small" @click="handleBatchStatus(1)">批量移除</el-button>
+            <el-button v-else type="primary" size="small" @click="handleBatchStatus(1)">批量移除</el-button>
           </el-form-item>
         </el-form>
       </div>
       <div class="table_wrapper">
         <tl-table
           :table="dataTable"
+          @handleTop="handleTop"
           @sizeChange="sizeChange"
           @pageChange="pageChange"
           @onHandleSelectionChange="onHandleSelectionChange"
@@ -62,6 +63,9 @@
           <template slot="handleStatus" slot-scope="props">
             <span v-if="activeName === 'second'" class="link_btn" @click="handleStatus(props.obj.row)">添加</span>
             <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">移除</span>
+          </template>
+           <template slot="handleTop" slot-scope="props">
+            <span v-if="activeName === 'first'" class="link_btn" @click="handleTop(props.obj.row)">置顶</span>
           </template>
         </tl-table>
       </div>
@@ -127,6 +131,7 @@ export default {
           {
             label: '主图',
             prop: 'primaryPic',
+            width: '130px',
             slot: true,
             init: '—'
           },
@@ -150,7 +155,7 @@ export default {
           {
             label: '销售量',
             prop: 'soldNum',
-            init: '—'
+            init: '0'
           },
           {
             label: '商品状态',
@@ -164,8 +169,8 @@ export default {
           width: '200',
           data: [
             {
-              label: '置顶',
-              Fun: 'handleSet'
+              Fun: 'handleTop',
+              slot: true
             },
             {
               slot: true,
@@ -203,7 +208,6 @@ export default {
       })
     },
     handleTab(tab) {
-      // this.activeName = tab
       console.log(this.activeName)
       this.getInfor()
     },
@@ -231,7 +235,6 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
         })
       })
     },
@@ -254,7 +257,6 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
         })
       })
     },
@@ -267,26 +269,13 @@ export default {
       this.dataTable.page = 1
       this.getInfor()
     },
-    handleAdd() {
-      this.addObj = Object.assign({}, addObj)
-      this.showAddDialog = true
-    },
-    handleSet(row) {
-      this.$router.push({ name: 'ConfigGoods' })
-    },
-    handleDel(row) {
-      this.$confirm('此操作将删除橱窗, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        var url = `${this.$api.showcase}/${row.id}`
-        this.$http.send(url, {}, 'delete').then(res => {
-          this.$message.success('操作成功~')
-          this.getInfor()
-        }).catch(res => {
-          this.$message.error(res.msg)
-        })
+    handleTop(row) {
+      var url = `${this.$api.showcaseSpu}/${this.id}/${row.id}/top`
+      this.$http.send(url, {}, 'patch').then(res => {
+        this.$message.success('操作成功~')
+        this.getInfor()
+      }).catch(res => {
+        // this.$message.error(res.msg)
       })
     },
     handleSumbitSave() {
