@@ -220,7 +220,7 @@ export default {
           name: attr,
           list: ObjMap[attr]
         })
-        }
+      }
         
       }
     }

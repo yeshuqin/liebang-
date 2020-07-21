@@ -6,9 +6,6 @@
           <el-form-item label="商品ID">
             <el-input v-model.trim="formInline.id" clearable placeholder="请输入商品ID" />
           </el-form-item>
-          <el-form-item label="商品名称">
-            <el-input v-model.trim="formInline.name" clearable placeholder="请输入商品名称" />
-          </el-form-item>
           <el-form-item label="一级类别">
             <el-select v-model="formInline.cateId" filterable clearable placeholder="请选择">
               <el-option
@@ -18,6 +15,9 @@
                 :value="item.id"
               />
             </el-select>
+          </el-form-item>
+          <el-form-item label="服务类型">
+            <el-input v-model.trim="formInline.name" clearable placeholder="请输入商品名称" />
           </el-form-item>
           <el-form-item label="商品状态">
             <el-select v-model="formInline.saleStatus" filterable clearable placeholder="请选择">

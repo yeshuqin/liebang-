@@ -120,14 +120,14 @@ export default {
           }
         ],
         data: [
-          {
-            id: '001',
-            status: 1
-          },
-          {
-            id: '002',
-            status: 2
-          }
+          // {
+          //   id: '001',
+          //   status: 1
+          // },
+          // {
+          //   id: '002',
+          //   status: 2
+          // }
         ],
         operation: {
           width: '200',

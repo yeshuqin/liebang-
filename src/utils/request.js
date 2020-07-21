@@ -3,7 +3,7 @@ import { Message } from 'element-ui'
 import store from '@/store'
 import { getToken } from '@/utils/auth'
 
-axios.defaults.baseURL = 'http://localhost:9528/admin/'
+axios.defaults.baseURL = `${location.origin}/admin/`
 
 axios.interceptors.request.use(
   function (config) {
@@ -76,7 +76,6 @@ axios.interceptors.response.use(
 // )
 
 const send = function(url, data = {}, methods = 'post') {
-  console.log(data, 'data==')
   return new Promise((resolve, reject) => {
     axios({
       method: methods,

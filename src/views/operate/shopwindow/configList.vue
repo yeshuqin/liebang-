@@ -10,15 +10,8 @@
           <el-form-item label="商品ID">
             <el-input v-model.trim="formInline.id" clearable placeholder="请输入商品ID" />
           </el-form-item>
-          <el-form-item label="一级类别">
-            <el-select v-model="formInline.cateId" filterable clearable placeholder="请选择">
-              <el-option
-                v-for="item in cateList"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-              />
-            </el-select>
+          <el-form-item label="服务类型">
+            <el-input v-model.trim="formInline.name" clearable placeholder="请输入服务类型" />
           </el-form-item>
           <el-form-item label="商品状态">
             <el-select v-model="formInline.saleStatus" filterable clearable placeholder="请选择">
@@ -34,8 +27,8 @@
             <el-button type="primary" size="small" icon="el-icon-search" @click="handleSearch">搜索</el-button>
           </el-form-item>
           <el-form-item>
-            <el-button v-if="activeName !== 'first'" type="primary" size="small" @click="handleBatchStatus(0)">批量添加</el-button>
-            <el-button v-else type="primary" size="small" @click="handleBatchStatus(1)">批量移除</el-button>
+            <el-button v-if="activeName !== 'first'" type="primary" size="small" @click="handleBatchStatus(1)">批量添加</el-button>
+            <el-button v-else type="primary" size="small" @click="handleBatchStatus(0)">批量移除</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -94,7 +87,6 @@ export default {
       formInline: {
         name: '',
         id: '',
-        cateId: '',
         saleStatus: ''
       },
       cateList: [],
@@ -126,6 +118,11 @@ export default {
           {
             label: '一级类别',
             prop: 'cateName',
+            init: '—'
+          },
+          {
+            label: '服务类型',
+            prop: 'name',
             init: '—'
           },
           {
@@ -225,7 +222,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        var status = this.activeName === 'first' ? 1 : 0
+        var status = this.activeName === 'first' ? 0 : 1
         var url = `${this.$api.showcaseSpu}/operation`
         this.$http.send(url, {
           spuList: [row.id],
@@ -243,7 +240,7 @@ export default {
         this.$message.error('请至少选择一项~')
         return
       }
-      this.$confirm(`此操作将批量${type === 1 ? '删除' : '添加'}商品, 是否继续?`, '提示', {
+      this.$confirm(`此操作将批量${type === 1 ? '添加' : '删除'}商品, 是否继续?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

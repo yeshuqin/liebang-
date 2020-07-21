@@ -65,7 +65,7 @@
           <el-input v-model.trim="addObj.linkUrl" clearable placeholder="请输入配置链接" />
         </el-form-item>
         <el-form-item label="广告内容:">
-          <Upload :limit="1" @handleSuccess="handleSuccessUpload" @handleRemove="handleRemove" />
+          <Upload :limit="1" :filelist="filelist" @handleSuccess="handleSuccessUpload" @handleRemove="handleRemove" />
           <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
         </el-form-item>
       </el-form>
@@ -176,11 +176,17 @@ export default {
         }
       },
       addObj: {},
+      filelist: [],
       showAddDialog: false
     }
   },
   created() {
     this.getInfor()
+  },
+  watch: {
+    showAddDialog(val) {
+       this.filelist = []
+    }
   },
   methods: {
     getInfor() {

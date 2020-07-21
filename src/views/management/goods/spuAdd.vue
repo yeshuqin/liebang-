@@ -399,7 +399,7 @@ export default {
         this.$message.error('至少新增一条sku属性~')
         return
       }
-      
+      this.spuForm.synopsis = JSON.stringify(this.spuForm.synopsis)
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
         picList: this.picListList.join(','),

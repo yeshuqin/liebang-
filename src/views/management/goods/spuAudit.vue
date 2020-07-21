@@ -259,6 +259,7 @@ export default {
         this.introductionList = JSON.parse(res.data.introduction)
         this.picListList = res.data.picList.split(',')
         this.dataTable.data = res.data.materialList || []
+        this.spuForm.synopsis = JSON.parse(res.data.synopsis)
         this.filelistPic = res.data.picList.split(',').map(item => {
           return {
             url: item
@@ -398,7 +399,8 @@ export default {
       if(skuList.length === 0) {
         this.$message.error('至少新增一条sku属性~')
         return
-      }      
+      }
+      this.spuForm.synopsis = JSON.stringify(this.spuForm.synopsis)
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
         picList: this.picListList.join(','),
