@@ -7,6 +7,7 @@ export default {
   spu: 'spu',
   sku: 'sku',
   upload: '/admin/upload/image',
+  uploadFile: '/admin/upload/file',
   account: 'account',
   login: 'account/login',
   logout: 'account/logout'

@@ -88,6 +88,7 @@
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
 export default {
+  name: 'skuAudit',
   components: {
     tlTable
   },

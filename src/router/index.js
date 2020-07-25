@@ -148,7 +148,7 @@ export const constantRoutes = [
             name: 'GoodsSpuAdd',
             hidden: true,
             meta: { activeMenu: '/management/goods', title: 'spu新增', hiddenTags: true, noCache: true},
-            component: () => import('@/views/management/goods/spuAdd.vue')
+            component: () => import('@/views/management/goods/spuAudit.vue')
           }
         ]
       }

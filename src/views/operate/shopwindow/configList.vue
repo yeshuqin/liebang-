@@ -182,6 +182,10 @@ export default {
   created() {
     this.getInfor()
     this.getCate()
+    console.log('created=====')
+  },
+  activated() {
+    console.log('activated=====')
   },
   methods: {
     getInfor() {

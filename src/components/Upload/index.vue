@@ -77,7 +77,6 @@ export default {
          }
         this.$message.error(response.msg, 5000)
       }
-      
     },
     beforeAvatarUpload(file) {
       const typeArr = ['image/gif', 'image/jpeg', 'image/jpg', 'image/png']

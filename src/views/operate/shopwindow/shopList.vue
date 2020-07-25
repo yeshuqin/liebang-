@@ -121,6 +121,7 @@ export default {
           {
             label: '橱窗内容',
             prop: 'picUrl',
+            width: '120px',
             slot: true,
             init: '—'
           },

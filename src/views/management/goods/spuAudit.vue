@@ -1,6 +1,6 @@
 <template>
   <div class="spu_wrapper">
-    <el-form ref="spuForm" size="small" :model="spuForm" :rules="rules" label-width="100px" class="spuForm">
+    <el-form ref="spuForm" size="small" :model="spuForm" label-width="100px" class="spuForm">
       <el-form-item v-if="isEdit" label="商品ID：" required>
         <el-input v-model="spuForm.id" clearable filterable disabled placeholder="请输入商品ID" />
       </el-form-item>
@@ -115,11 +115,12 @@
         </el-form-item>
         <el-form-item label="上传文件:">
           <el-upload
-            :action="$api.upload"
-            name="image"
+            :action="$api.uploadFile"
+            name="file"
             :limit="1"
             :on-remove="handleFileRemove"
             :on-error="handleError"
+            :headers="headers"
             :on-success="handleFileSuccess"
             :file-list="fileList"
           >
@@ -144,6 +145,7 @@ import tlTable from '@/components/BaseTable/tlTable'
 import skuAudit from './skuAudit'
 var addMaterial = {
   fileUrl: '',
+  fileName: '',
   picUrl: '',
   id: '',
   name: ''
@@ -156,6 +158,9 @@ export default {
   },
   data() {
     return {
+      headers: {
+        token: localStorage.getItem('token')
+      },
       spuForm: {
         id: '',
         cateId: '',
@@ -166,11 +171,6 @@ export default {
         synopsis: '',
         tags: '',
         materialList: []
-      },
-      rules: {
-        name: [
-          { required: true, message: '请输入商品ID', trigger: 'blur' }
-        ]
       },
       dataTable: {
         hasSelect: false,
@@ -233,10 +233,10 @@ export default {
       showAddDialog: false,
       cateList: [],
       addObj: {},
-      fileList: [],
       id: this.$route.query.id,
       picFileList: [],
       filelistPic: [],
+      fileList: [],
       fileEdit: false,
       dataList: []
     }
@@ -307,9 +307,7 @@ export default {
       this.picListList.push(response.data)
     },
     handleRemovePic(file, fileList) {
-      this.picListList = this.fileList.map(item => {
-        return item.response.data
-      })
+      this.picListList = []
     },
     handleSuccessTheme(response) { // 商品主题
       this.spuForm.primaryPic = response.data
@@ -326,8 +324,18 @@ export default {
     handleRemovePicUrl() {
       this.addObj.picUrl = ''
     },
-    handleFileSuccess(response) { //材料上传资料
-      this.addObj.fileUrl = response.data
+    handleFileSuccess(response, file, fileList) { //材料上传资料
+      if(response.code === 0) {
+        this.addObj.fileUrl = response.data
+        this.addObj.fileName = file.name
+      }else {
+         if (response.code === 40001) {
+            this.$store.dispatch('user/resetToken').then(() => {
+              location.reload()
+            })
+         }
+        this.$message.error(response.msg, 5000)
+      }
     },
     handleFileRemove() {
       this.addObj.fileUrl = ''
@@ -337,6 +345,7 @@ export default {
     },
     addMaterial() {
       this.addObj = Object.assign({}, addMaterial)
+      this.fileList = []
       this.picFileList = []
       this.fileEdit = false
       this.showAddDialog = true
@@ -357,6 +366,7 @@ export default {
       this.addObj = Object.assign({}, addMaterial, row, {
         index: index
       })
+      this.fileList = row.fileUrl ? [{ur: row.fileUrl, name: row.fileUrl}] : []
       this.picFileList = row.picUrl ? [{ url: row.picUrl }] : []
       this.fileEdit = true
       this.showAddDialog = true
@@ -400,12 +410,13 @@ export default {
         this.$message.error('至少新增一条sku属性~')
         return
       }
-      this.spuForm.synopsis = JSON.stringify(this.spuForm.synopsis)
+      let synopsis = JSON.stringify(this.spuForm.synopsis)
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
         picList: this.picListList.join(','),
         tags: this.tagsList.join(','),
         materialList: this.dataTable.data,
+        synopsis,
         skuList
       })
       console.log(params)
