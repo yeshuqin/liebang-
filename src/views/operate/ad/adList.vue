@@ -204,7 +204,7 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
@@ -230,7 +230,7 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
@@ -256,7 +256,7 @@ export default {
         this.showAddDialog = false
         this.getInfor()
       }).catch(res => {
-        this.$message.error(res.message)
+        // this.$message.error(res.message)
       })
     },
     handleSuccessUpload(file, fileList) {

@@ -11,11 +11,11 @@
             <span class="logout">{{name}}</span>
           </span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item>
-              <span @click="handleLogout">退出</span> 
+            <el-dropdown-item @click.native="handleLogout">
+              <span>退出</span> 
             </el-dropdown-item>
-            <el-dropdown-item>
-              <span @click="handlePwd">修改密码</span>
+            <el-dropdown-item @click.native="handlePwd">
+              <span>修改密码</span>
             </el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>

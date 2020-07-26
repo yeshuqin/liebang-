@@ -266,7 +266,7 @@ export default {
           }
         })
       }).catch(res => {
-        this.$message.error(res.msg)
+        // this.$message.error(res.msg)
       })
     },
     getSkuList() {
@@ -275,7 +275,7 @@ export default {
         console.log(res, 'res==')
         this.dataList = res.data
       }).catch(res => {
-        this.$message.error(res.msg)
+        // this.$message.error(res.msg)
       })
     },
     getCate() {
@@ -426,7 +426,7 @@ export default {
         this.$router.push({ name: 'Goods' })
         this.getInfor()
       }).catch(res => {
-        this.$message.error(res.msg)
+        // this.$message.error(res.msg)
       })
     },
     handleGo() {

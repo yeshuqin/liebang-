@@ -362,7 +362,7 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
@@ -377,7 +377,7 @@ export default {
           this.$message.success('操作成功~')
           this.getSkuList()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
@@ -396,7 +396,7 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
@@ -412,7 +412,7 @@ export default {
           this.$message.success('操作成功~')
           this.getSkuList()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
@@ -431,7 +431,7 @@ export default {
         //   item.attribute = this.getAttribute(item.attribute)
         // })
       }).catch(res => {
-        this.$message.error(res.msg)
+        // this.$message.error(res.msg)
       })
     },
     getAttribute(str) {
@@ -462,7 +462,7 @@ export default {
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
-          this.$message.error(res.msg)
+          // this.$message.error(res.msg)
         })
       })
     },
