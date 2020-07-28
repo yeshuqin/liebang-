@@ -1,14 +1,21 @@
 <template>
   <div class="user_list">
     <el-form :inline="true" size="small" :model="formInline" label-width="100px">
-      <el-form-item label="用户ID">
-        <el-input v-model.trim="formInline.id" clearable placeholder="请输入用户ID" />
+      <el-form-item label="公司名称">
+        <el-input v-model.trim="formInline.companyName" clearable placeholder="请输入公司名称" />
       </el-form-item>
-      <el-form-item label="用户名称">
-        <el-input v-model.trim="formInline.name" clearable placeholder="请输入用户名称" />
+      <el-form-item label="注册手机号">
+        <el-input v-model.trim="formInline.phone" clearable placeholder="请输入注册手机号" />
       </el-form-item>
-      <el-form-item label="企业规模">
-        <el-input v-model.trim="formInline.name" clearable placeholder="请输入企业规模" />
+      <el-form-item label="认证状态">
+        <el-select v-model="formInline.status" filterable placeholder="请选择">
+          <el-option
+            v-for="item in statusItems"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>     
       </el-form-item>
       <el-form-item>
         <el-button type="primary" size="small" icon="el-icon-search" @click="handleSubmit">搜索</el-button>
@@ -21,37 +28,58 @@
         @pageChange="pageChange"
         @handleEdit="handleEdit"
       >
-        <template slot="handleStatus" slot-scope="props">
-          <span v-if="props.obj.row.status === 1" class="link_btn" @click="handleStatus(props.obj.row)">回复</span>
-          <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">生效</span>
+        <template slot="name" slot-scope="props">
+           <span>{{props.obj.row.name}}</span>
+           <p>{{props.obj.row.createTime}}</p>
+        </template>
+        <template slot="status" slot-scope="props">
+          <span v-if="props.obj.row.status === 0" class="link_btn" @click="handleStatus(props.obj.row)">认证中</span>
+          <span v-else-if="props.obj.row.status === 2">认证通过</span>
+          <span v-else-if="props.obj.row.status === 3">认证失败</span>
+          <span v-else>未认证</span>
         </template>
       </tl-table>
     </div>
     <!-- 编辑用户 -->
     <el-dialog title="编辑用户" :visible.sync="showEditDialog" custom-class="add_dialog" width="800px" center>
-      <el-form :model="addObj" size="small" label-width="120px">
-        <el-form-item label="企业名称:" required>
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入企业名称" />
+      <el-form :model="editObj" size="small" label-width="120px">
+        <el-form-item label="企业名称:">
+          <el-input v-model.trim="editObj.companyName" clearable placeholder="请输入企业名称" />
         </el-form-item>
-        <el-form-item label="企业类型:" required>
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入企业类型" />
+        <el-form-item label="企业类型:">
+          <el-input v-model.trim="editObj.companyCate" clearable placeholder="请输入企业类型" />
         </el-form-item>
-        <el-form-item label="企业规模:" required>
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入企业规模" />
+        <el-form-item label="企业规模:">
+          <el-select v-model="editObj.companyScale" filterable clearable placeholder="请选择">
+            <el-option
+              v-for="item in companyScaleItems"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
+          </el-select> 
         </el-form-item>
-        <el-form-item label="信用机构代码:" required>
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入信用机构代码" />
+        <el-form-item label="信用机构代码:">
+          <el-input v-model.trim="editObj.companyCode" clearable placeholder="请输入信用机构代码" />
         </el-form-item>
-        <el-form-item label="联系方式:" required>
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入联系方式" />
+        <el-form-item label="联系方式:">
+          {{editObj.phone}}
         </el-form-item>
-        <el-form-item label="企业法人:" required>
-          <el-input v-model.trim="addObj.name" clearable placeholder="请输入企业法人" />
+        <el-form-item label="企业法人:">
+          <el-input v-model.trim="editObj.name" clearable placeholder="请输入企业法人" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" size="small" @click="handleSumbitAdd">提 交</el-button>
+        <el-button type="primary" size="small" @click="handleSumbitEdit">提 交</el-button>
         <el-button size="small" @click="showEditDialog = false">返 回</el-button>
+      </div>
+    </el-dialog>
+     <!-- 认证弹框 -->
+    <el-dialog title="认证操作" :visible.sync="showStatusDialog" width="600px" center>
+      <p>请确认企业提交的资料后进行操作</p>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="handleSumbitStatus(1)">通 过</el-button>
+        <el-button @click="handleSumbitStatus(0)">拒 绝</el-button>
       </div>
     </el-dialog>
   </div>
@@ -66,8 +94,9 @@ export default {
   data() {
     return {
       formInline: {
-        name: '',
-        id: ''
+        companyName: '',
+        phone: '',
+        status: -1
       },
       dataTable: {
         hasSelect: false,
@@ -85,57 +114,46 @@ export default {
           },
           {
             label: '用户名称',
-            prop: '',
+            prop: 'companyName',
             init: '—'
           },
           {
             label: '企业类型',
-            prop: '',
+            prop: 'companyCate',
             init: '—'
           },
           {
             label: '企业规模',
-            prop: '',
+            prop: 'companyScale',
             init: '—'
           },
           {
             label: '信用机构代码证',
-            prop: '',
+            prop: 'companyCode',
             init: '—'
           },
           {
             label: '联系方式',
-            prop: '',
+            prop: 'phone',
             init: '—'
           },
           {
             label: '企业法人',
-            prop: '',
+            prop: 'name',
+            slot: true,
             init: '—'
           },
           {
             label: '是否企业认证',
-            prop: '',
+            prop: 'status',
+            slot: true,
             init: '—'
           }
         ],
-        data: [
-          // {
-          //   id: '001',
-          //   status: 1
-          // },
-          // {
-          //   id: '002',
-          //   status: 2
-          // }
-        ],
+        data: [],
         operation: {
           width: '200',
           data: [
-            {
-              Fun: 'handleStatus',
-              slot: true
-            },
             {
               label: '修改',
               Fun: 'handleEdit'
@@ -143,24 +161,93 @@ export default {
           ]
         }
       },
-      addObj: {
+      statusItems: [
+        {
+          value: -1,
+          label: '全部'
+        },
+        {
+          value: 0,
+          label: '未认证'
+        },
+        {
+          value: 1,
+          label: '认证中'
+        },
+        {
+          value: 2,
+          label: '认证通过'
+        },
+        {
+          value: 3,
+          label: '认证失败'
+        }
+      ],
+      companyScaleItems: ['0-20人', '20-99人', '100-499人', '500-999人', '1000-9999人', '10000人'],
+      editObj: {
         name: ''
       },
       showEditDialog: false,
-      fileList: []
+      fileList: [],
+      showStatusDialog: false,
+      statusId: ''
     }
+  },
+  created() {
+    this.getInfor()
   },
   methods: {
     getInfor() {
-
+      var params = Object.assign({}, {
+        current: this.dataTable.page,
+        size: this.dataTable.size
+      }, this.formInline)
+      this.dataTable.loading = true
+      this.$http.send(this.$api.userPage, params, 'post').then(res => {
+        if (res.data) {
+          this.dataTable.data = res.data.records
+          this.dataTable.total = res.data.total
+        }
+        this.dataTable.loading = false
+      }).catch(res => {
+        this.dataTable.loading = false
+      })
     },
     handleSubmit() {
+      this.dataTable.page = 1
+      this.getInfor()
     },
-    handleEdit() {
-      this.showEditDialog = true
+    handleEdit(row) {
+      this.$http.send(this.$api.userInfo, {
+        id: row.id
+      }, 'post').then(res => {
+        if (res.data) {
+          this.editObj = Object.assign({}, this.editObj, res.data)
+          this.showEditDialog = true
+        }
+      })
     },
-    handleSumbitAdd() {
-
+    handleSumbitEdit() {
+      this.$http.send(this.$api.userUpdate, this.editObj, 'post').then(res => {
+        this.showEditDialog = false
+        this.$message.success('操作成功~')
+        this.getInfor()
+      })
+    },
+    handleStatus(row) {
+         this.showStatusDialog = true
+         this.statusId = row.id
+    },
+    handleSumbitStatus (operation) {
+        this.$http.send(this.$api.userAuth, {
+          id: this.statusId,
+          operation: operation
+        }, 'post').then(res => {
+          this.$message.success('操作成功~')
+          this.showStatusDialog = false
+          this.getInfor()
+        }).catch(res => {
+        })
     },
     pageChange(page) {
       this.dataTable.page = page

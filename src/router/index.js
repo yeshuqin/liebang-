@@ -151,13 +151,13 @@ export const constantRoutes = [
             component: () => import('@/views/management/goods/spuAudit.vue')
           }
         ]
+      },
+      {
+        path: 'newsList',
+        name: 'NewsList',
+        component: () => import('@/views/management/news/newsList'),
+        meta: { title: '消息管理' }
       }
-      // {
-      //   path: 'newsList',
-      //   name: 'NewsList',
-      //   component: () => import('@/views/management/news/newsList'),
-      //   meta: { title: '消息管理' }
-      // }
     ]
   },
   // {
