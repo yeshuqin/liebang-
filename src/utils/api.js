@@ -22,12 +22,14 @@ export default {
   userPage: 'user/page', // 分页查询用户基础信息
   userUpdate: 'user/update', // 修改用户信息
 
-
   // 订单交易API
   orderAudit: 'order/audit', // 订单资料审核
   orderCancel: 'order/cancel', // 订单取消
   orderConfirm: 'order/confirm', // 确认支付
   orderDeliver: '/order/deliver', // 订单发货
+  orderDelivered: 'order/delivered', // 确认收货
   orderDetail: 'order/detail', // 订单详情
-  orderPage: 'order/page' //分页查询订单列表
+  orderPage: 'order/page', //分页查询订单列表
+
+  systemExpressList: 'system/expressList' // 查询物流供应商列表
 }

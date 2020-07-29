@@ -25,8 +25,14 @@ Vue.filter('timestampToTime', function(value) {
   return YY + MM + DD + hh + mm + ss
 })
 
+Vue.filter('filterMoney', function (value) {
+  if (!value) return 0
+  return (value / 100).toFixed(2)
+})
+
 Vue.prototype.$http = http
 Vue.prototype.$api = api
+
 
 import '@/icons'
 import '@/permission'

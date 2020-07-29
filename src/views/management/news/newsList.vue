@@ -104,11 +104,11 @@ export default {
             prop: 'userId',
             init: '-'
           },
-          {
-            label: '用户名称',
-            prop: 'operator',
-            init: '—'
-          },
+          // {
+          //   label: '用户名称',
+          //   prop: 'companyName',
+          //   init: '—'
+          // },
           {
             label: '咨询手机',
             prop: 'phone',
@@ -117,6 +117,11 @@ export default {
           {
             label: '问题类型',
             prop: 'type',
+            init: '—'
+          },
+          {
+            label: '咨询内容',
+            prop: 'content',
             init: '—'
           },
           {
