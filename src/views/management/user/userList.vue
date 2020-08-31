@@ -28,10 +28,6 @@
         @pageChange="pageChange"
         @handleEdit="handleEdit"
       >
-        <template slot="name" slot-scope="props">
-           <span>{{props.obj.row.name}}</span>
-           <p>{{props.obj.row.createTime}}</p>
-        </template>
         <template slot="status" slot-scope="props">
           <span v-if="props.obj.row.status === 0" class="link_btn" @click="handleStatus(props.obj.row)">认证中</span>
           <span v-else-if="props.obj.row.status === 2">认证通过</span>
@@ -78,8 +74,8 @@
     <el-dialog title="认证操作" :visible.sync="showStatusDialog" width="600px" center>
       <p>请确认企业提交的资料后进行操作</p>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="handleSumbitStatus(1)">通 过</el-button>
-        <el-button @click="handleSumbitStatus(0)">拒 绝</el-button>
+        <el-button type="primary" size="small" @click="handleSumbitStatus(1)">通 过</el-button>
+        <el-button size="small" @click="handleSumbitStatus(0)">拒 绝</el-button>
       </div>
     </el-dialog>
   </div>
@@ -140,7 +136,12 @@ export default {
           {
             label: '企业法人',
             prop: 'name',
-            slot: true,
+            init: '—'
+          },
+          {
+            label: '创建时间',
+            prop: 'createTime',
+            width: '100px',
             init: '—'
           },
           {

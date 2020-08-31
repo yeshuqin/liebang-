@@ -70,7 +70,7 @@
       >
         <template slot="primaryPic" slot-scope="props">
           <span v-if="!props.obj.row.primaryPic">暂无图片</span>
-          <img v-else :src="props.obj.row.primaryPic" class="picUrl" alt="">
+          <img v-else :src="props.obj.row.primaryPic" class="picUrl" @click="handlePreview(props.obj.row)" alt="">
         </template>
         <template slot="saleStatus" slot-scope="props">
           <span>{{ props.obj.row.saleStatus === 0 ? '未上架' : '已上架' }}</span>
@@ -79,16 +79,16 @@
           <span>{{ props.obj.row.saleTime | timestampToTime }}</span>
         </template>
         <template slot="minPrice" slot-scope="props">
-          <span>{{ props.obj.row.minPrice }} - {{ props.obj.row.maxPrice }}</span>
+          <span>¥{{ props.obj.row.minPrice | filterMoney }} - {{ props.obj.row.maxPrice | filterMoney}}</span>
         </template>
         <template slot="handleStatus" slot-scope="props">
           <span v-if="props.obj.row.saleStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">上架</span>
-          <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">下架</span>
+          <span v-else class="link_btn" @click="handleStatus(props.obj.row)">下架</span>
         </template>
       </tl-table>
     </div>
     <!-- sku列表 -->
-    <el-dialog :title="`${spuName} SKU列表`" :visible.sync="showSkuDialog" custom-class="sku_dialog" width="1000px" center>
+    <el-dialog :title="`${spuName} SKU列表`" :visible.sync="showSkuDialog" custom-class="sku_dialog" width="1200px" center>
       <tl-table
         :showpagination="false"
         :table="skuDataTable"
@@ -100,9 +100,21 @@
         <template slot="attribute" slot-scope="props">
           <span v-if="props.obj.row.attribute">{{ getAttribute(props.obj.row.attribute) }}</span>
         </template>
+        <template slot="costPrice" slot-scope="props">
+          <span>¥{{ props.obj.row.costPrice | filterMoney }}</span>
+        </template>
+        <template slot="salePrice" slot-scope="props">
+          <span>¥{{ props.obj.row.salePrice | filterMoney }}</span>
+        </template>
+        <template slot="marketPrice" slot-scope="props">
+          <span>¥{{ props.obj.row.marketPrice | filterMoney }}</span>
+        </template>
+         <template slot="name" slot-scope="props">
+          <span v-if="props.obj.row.attribute">{{ spuName }} {{getAttribute(props.obj.row.attribute) }}</span>
+        </template>
         <template slot="handleStatus" slot-scope="props">
           <span v-if="props.obj.row.saleStatus === 0" class="link_btn" @click="handleSKUStatus(props.obj.row)">上架</span>
-          <span v-else class="link_btn red" @click="handleSKUStatus(props.obj.row)">下架</span>
+          <span v-else class="link_btn" @click="handleSKUStatus(props.obj.row)">下架</span>
         </template>
       </tl-table>
       <div slot="footer" class="dialog-footer">
@@ -110,15 +122,19 @@
         <el-button size="small" @click="showSkuDialog = false">关 闭</el-button>
       </div>
     </el-dialog>
+    <ImgDialog :showViewImgDialog.sync="showViewImgDialog" :imgSrc="imgSrc"></ImgDialog>
   </div>
 </template>
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+import ImgDialog from '@/components/ImgDialog/ImgDialog'
+
 export default {
   name: 'GoodsList',
   components: {
-    tlTable
+    tlTable,
+    ImgDialog
   },
   data() {
     return {
@@ -146,7 +162,7 @@ export default {
         hasExpand: false,
         loading: false,
         page: 1,
-        size: 50,
+        size: 20,
         total: 0,
         expands: [],
         tr: [
@@ -168,12 +184,14 @@ export default {
           {
             label: '主图',
             prop: 'primaryPic',
+            width:"120px",
             slot: true,
             init: '—'
           },
           {
             label: '最低-最高销售价',
             prop: 'minPrice',
+            width: '130px',
             slot: true,
             init: '—'
           },
@@ -185,12 +203,14 @@ export default {
           {
             label: '上架时间',
             prop: 'saleTime',
+            width: '100px',
             slot: true,
             init: '—'
           },
           {
             label: '创建时间',
             prop: 'createTime',
+            width: '100px',
             init: '—'
           },
           {
@@ -202,7 +222,7 @@ export default {
         ],
         data: [],
         operation: {
-          width: '200',
+          width: '140',
           data: [
             {
               label: '编辑',
@@ -239,7 +259,9 @@ export default {
           },
           {
             label: 'SKU名称',
-            prop: '',
+            prop: 'name',
+            width: '280px',
+            slot: true,
             init: '—'
           },
           {
@@ -252,21 +274,19 @@ export default {
           {
             label: '成本价',
             prop: 'costPrice',
-            init: '—'
-          },
-          {
-            label: '实付价',
-            prop: '',
+            slot: true,
             init: '—'
           },
           {
             label: '销售价',
             prop: 'salePrice',
+            slot: true,
             init: '—'
           },
           {
             label: '市场价',
             prop: 'marketPrice',
+            slot: true,
             init: '—'
           },
           {
@@ -296,7 +316,9 @@ export default {
       saleTime: [],
       checkBox: [],
       cateList: [],
-      showSkuDialog: false
+      showSkuDialog: false,
+      showViewImgDialog: false,
+      imgSrc: ''
     }
   },
   created() {
@@ -425,10 +447,9 @@ export default {
     getSkuList() {
       var url = `${this.$api.sku}/spu/${this.spuId}`
       this.$http.send(url, {}, 'get').then(res => {
-        console.log(res)
         this.skuDataTable.data = res.data
         // this.skuDataTable.data.forEach(item => {
-        //   item.attribute = this.getAttribute(item.attribute)
+          // item.costPrice = item.costPrice / 100
         // })
       }).catch(res => {
         // this.$message.error(res.msg)
@@ -441,7 +462,6 @@ export default {
         arr.push(`${[i]}：${obj[i]}`)
       }
       var key = arr.join(',')
-      console.log(key, 'key===')
       return key
     },
     handleBatchStatus(type) {
@@ -473,6 +493,10 @@ export default {
     sizeChange(size) {
       this.dataTable.size = size
       this.getInfor()
+    },
+    handlePreview (row) {
+      this.showViewImgDialog = true
+      this.imgSrc = row.primaryPic
     }
   }
 }

@@ -410,6 +410,13 @@ export default {
         this.$message.error('至少新增一条sku属性~')
         return
       }
+      let skuListArr = JSON.parse(JSON.stringify(skuList))
+      console.log(skuListArr, 'skuListArr')
+      skuListArr.forEach(item => {
+        item.costPrice = item.costPrice * 100
+        item.marketPrice = item.marketPrice * 100
+        item.salePrice = item.salePrice * 100
+      })
       let synopsis = JSON.stringify(this.spuForm.synopsis)
       var params = Object.assign({}, this.spuForm, {
         introduction: JSON.stringify(this.introductionList),
@@ -417,7 +424,7 @@ export default {
         tags: this.tagsList.join(','),
         materialList: this.dataTable.data,
         synopsis,
-        skuList
+        skuList: skuListArr
       })
       console.log(params)
       var method = params.id ? 'put' : 'post'

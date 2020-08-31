@@ -42,7 +42,7 @@
         >
           <template slot="primaryPic" slot-scope="props">
             <span v-if="!props.obj.row.primaryPic">暂无图片</span>
-            <img v-else :src="props.obj.row.primaryPic" class="picUrl" alt="">
+            <img v-else :src="props.obj.row.primaryPic" class="picUrl" alt="" @click="handlePreview(props.obj.row)">
           </template>
           <template slot="saleStatus" slot-scope="props">
             <span>{{ props.obj.row.saleStatus === 0 ? '未上架' : '已上架' }}</span>
@@ -51,7 +51,7 @@
             <span>{{ props.obj.row.saleTime | timestampToTime }}</span>
           </template>
           <template slot="minPrice" slot-scope="props">
-            <span>{{ props.obj.row.minPrice }} - {{ props.obj.row.maxPrice }}</span>
+            <span>¥{{ props.obj.row.minPrice | filterMoney }} - {{ props.obj.row.maxPrice | filterMoney }}</span>
           </template>
           <template slot="handleStatus" slot-scope="props">
             <span v-if="activeName === 'second'" class="link_btn" @click="handleStatus(props.obj.row)">添加</span>
@@ -63,11 +63,14 @@
         </tl-table>
       </div>
     </div>
+    <ImgDialog :showViewImgDialog.sync="showViewImgDialog" :imgSrc="imgSrc"></ImgDialog>
   </div>
 </template>
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+import ImgDialog from '@/components/ImgDialog/ImgDialog'
+
 var addObj = {
   id: '',
   code: '',
@@ -77,7 +80,8 @@ var addObj = {
 }
 export default {
   components: {
-    tlTable
+    tlTable,
+    ImgDialog
   },
   data() {
     return {
@@ -128,7 +132,7 @@ export default {
           {
             label: '主图',
             prop: 'primaryPic',
-            width: '130px',
+            width: '120px',
             slot: true,
             init: '—'
           },
@@ -141,12 +145,14 @@ export default {
           {
             label: '上架时间',
             prop: 'saleTime',
+            width: '100px',
             slot: true,
             init: '—'
           },
           {
             label: '创建时间',
             prop: 'createTime',
+            width: '100px',
             init: '—'
           },
           {
@@ -176,16 +182,18 @@ export default {
           ]
         }
       },
-      checkBox: []
+      checkBox: [],
+      showViewImgDialog: false,
+      imgSrc: ''
     }
   },
   created() {
     this.getInfor()
     this.getCate()
-    console.log('created=====')
+    // console.log('created=====')
   },
   activated() {
-    console.log('activated=====')
+    // console.log('activated=====')
   },
   methods: {
     getInfor() {
@@ -300,6 +308,10 @@ export default {
     sizeChange(size) {
       this.dataTable.size = size
       this.getInfor()
+    },
+    handlePreview (row) {
+      this.showViewImgDialog = true
+      this.imgSrc = row.primaryPic
     }
   }
 }

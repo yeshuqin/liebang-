@@ -48,21 +48,20 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 
 export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
+      if (!value) {
         callback(new Error('请输入账号'))
       } else {
         callback()
       }
     }
     const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('请输入6位数密码'))
+      if (value.length === 0) {
+        callback(new Error('请输入密码'))
       } else {
         callback()
       }
@@ -114,7 +113,6 @@ export default {
              this.$router.push({name: 'Operate'})
           }).catch(res => {
             this.loading = false
-            this.$message.error(res.msg+'11')
           })
         } else {
           return false

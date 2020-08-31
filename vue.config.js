@@ -33,7 +33,8 @@ module.exports = {
     },
     proxy: {
       '/admin': {
-        target: 'http://120.92.79.156',
+        // target: 'http://120.92.79.156',
+        target: 'http://admin.junhengbes.com',
         ws: true,
         changeOrigin: true,
         pathRewrite: {

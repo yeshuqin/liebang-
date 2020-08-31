@@ -53,6 +53,9 @@
         <template slot="payType" slot-scope="props">
            <span>{{payTypeMap[props.obj.row.payType]}}</span>
         </template>
+        <template slot="payTime" slot-scope="props">
+           <span>{{props.obj.row.payTime ? parseTime(props.obj.row.payTime) : '一'}}</span>
+        </template>
         <template slot="handleStatus" slot-scope="props">
            <span class="link_btn" v-if="props.obj.row.status === 0" @click="handleCancel(props.obj.row)">取消</span>
            <span class="link_btn" v-if="props.obj.row.status === 1 && props.obj.row.payType === 1" @click="handlePay(props.obj.row)">确认收款</span>
@@ -169,12 +172,14 @@ MATERIAL_SUCCESS(14, "资料审核通过");
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
+import {parseTime} from '@/utils/index'
 export default {
   components: {
     tlTable
   },
   data() {
     return {
+      parseTime: parseTime,
       formInline: {
         id: '',
         attribute: '',
@@ -249,6 +254,7 @@ export default {
           {
             label: '下单时间',
             prop: 'createTime',
+            width: '100px',
             init: '—'
           },
           {
@@ -259,6 +265,8 @@ export default {
           {
             label: '支付时间',
             prop: 'payTime',
+            slot: true,
+            width: '100px',
             init: '—'
           },
           {

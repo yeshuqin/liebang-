@@ -46,6 +46,19 @@
         </template>
       </tl-table>
     </div>
+     <!-- 提示 -->
+    <el-dialog title="填写咨询反馈" :visible.sync="showStatusDialog" width="600px" center>
+      <el-row>
+        <el-col :span="4">备注：</el-col>
+        <el-col :span="20">
+          <el-input v-model.trim="remark" type="textarea" :rows="4" clearable placeholder="请输入" />
+        </el-col>
+      </el-row>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="small" @click="showStatusDialog = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="handleSumbitStatus">确 认</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -125,13 +138,14 @@ export default {
             init: '—'
           },
           {
-            label: '修改时间',
-            prop: 'updateTime',
+            label: '咨询时间',
+            prop: 'createTime',
+            width: '100px',
             init: '—'
           },
           {
-            label: '注册时间',
-            prop: 'createTime',
+            label: '备注',
+            prop: 'remark',
             init: '—'
           },
           {
@@ -146,7 +160,10 @@ export default {
           width: '200',
           data:[]
         }
-      }
+      },
+      showStatusDialog: false,
+      remark: '',
+      id: ''
     }
   },
   created() {
@@ -170,19 +187,33 @@ export default {
       })
     },
     handleStatus (row) {
-      this.$confirm('此操作将确认该消息, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$http.send(this.$api.faqConfirm, {
-          id: row.id
+      // this.$confirm('此操作将确认该消息, 是否继续?', '提示', {
+      //   confirmButtonText: '确定',
+      //   cancelButtonText: '取消',
+      //   type: 'warning'
+      // }).then(() => {
+      //   this.$http.send(this.$api.faqConfirm, {
+      //     id: row.id
+      //   }, 'post').then(res => {
+      //     this.$message.success('操作成功~')
+      //     this.getInfor()
+      //   }).catch(res => {
+      //   })
+      // })
+      this.id = row.id
+      this.remark = row.remark
+      this.showStatusDialog = true
+    },
+    handleSumbitStatus() {
+      this.$http.send(this.$api.faqConfirm, {
+          id: this.id,
+          remark: this.remark
         }, 'post').then(res => {
+          this.showStatusDialog = false
           this.$message.success('操作成功~')
           this.getInfor()
         }).catch(res => {
         })
-      })
     },
     handleSubmit() {
       this.dataTable.page = 1

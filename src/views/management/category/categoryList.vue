@@ -11,12 +11,12 @@
       >
         <template slot="picUrl" slot-scope="props">
           <span v-if="!props.obj.row.picUrl">暂无图片</span>
-          <img v-else :src="props.obj.row.picUrl" class="picUrl" alt="" style="width:100px;">
+          <img v-else :src="props.obj.row.picUrl" class="picUrl" alt="" @click="handlePreview(props.obj.row)">
         </template>
       </tl-table>
     </div>
     <!-- 类别 -->
-    <el-dialog title="新增类别" :append-to-body="true" :visible.sync="showCategoryDialog" custom-class="add_dialog" width="600px" center>
+    <el-dialog :title="`${addObj.id ? '编辑类别' : '新增类别'}`" :append-to-body="true" :visible.sync="showCategoryDialog" custom-class="add_dialog" width="600px" center>
       <el-form :model="addObj" label-width="120px" size="small">
         <el-form-item label="类别名称:" required>
           <el-input v-model.trim="addObj.name" clearable placeholder="请输入类别名称" />
@@ -26,7 +26,7 @@
           <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
         </el-form-item>
         <el-form-item label="简介:">
-          <el-input v-model.trim="addObj.synopsis" type="textarea" :rows="4" placeholder="请输入简介" />
+          <el-input v-model.trim="addObj.synopsis" type="textarea" :rows="3" placeholder="请输入简介" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -34,12 +34,14 @@
         <el-button size="small" @click="showCategoryDialog = false">返 回</el-button>
       </div>
     </el-dialog>
+    <ImgDialog :showViewImgDialog.sync="showViewImgDialog" :imgSrc="imgSrc"></ImgDialog>
   </div>
 </template>
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
 import Upload from '@/components/Upload/index'
+import ImgDialog from '@/components/ImgDialog/ImgDialog'
 const addObj = {
   id: '',
   name: '',
@@ -49,7 +51,8 @@ const addObj = {
 export default {
   components: {
     tlTable,
-    Upload
+    Upload,
+    ImgDialog
   },
   data() {
     return {
@@ -112,13 +115,13 @@ export default {
       },
       addObj: {},
       showCategoryDialog: false,
-      filelist: []
+      filelist: [],
+      showViewImgDialog: false,
+      imgSrc: ''
     }
   },
   created() {
     this.getInfor()
-  },
-  width: {
   },
   methods: {
     getInfor() {
@@ -169,7 +172,7 @@ export default {
         picUrl: row.picUrl,
         synopsis: row.synopsis
       })
-      this.filelist = [{ name: row.picUrl, url: row.picUrl }]
+      this.filelist = row.picUrl ? [{ name: row.picUrl, url: row.picUrl }] : []
       this.showCategoryDialog = true
     },
     handleSumbitAdd() {
@@ -191,6 +194,10 @@ export default {
     },
     handleRemove(file, fileList) {
       this.addObj.picUrl = ''
+    },
+    handlePreview (row) {
+      this.showViewImgDialog = true
+      this.imgSrc = row.picUrl
     }
   }
 }

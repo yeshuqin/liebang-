@@ -25,11 +25,12 @@
         @sizeChange="sizeChange"
         @pageChange="pageChange"
         @handleSet="handleSet"
+        @handleEdit="handleEdit"
         @handleDel="handleDel"
       >
         <template slot="picUrl" slot-scope="props">
           <span v-if="!props.obj.row.picUrl">暂无图片</span>
-          <img v-else class="picUrl" :src="props.obj.row.picUrl" alt="">
+          <img v-else class="picUrl" :src="props.obj.row.picUrl" alt="" @click="handlePreview(props.obj.row)">
         </template>
         <template slot="useStatus" slot-scope="props">
           <span>{{ props.obj.row.useStatus === 0 ? '未上线' : '已生效' }}</span>
@@ -39,12 +40,12 @@
         </template>
         <template slot="handleStatus" slot-scope="props">
           <span v-if="props.obj.row.useStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">生效</span>
-          <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">停用</span>
+          <span v-else class="link_btn" @click="handleStatus(props.obj.row)">停用</span>
         </template>
       </tl-table>
     </div>
     <!-- 新增橱窗配置 -->
-    <el-dialog title="新增橱窗配置" :visible.sync="showAddDialog" custom-class="add_dialog" width="800px" center>
+    <el-dialog :title="`${addObj.id ? '编辑橱窗配置' : '新增橱窗配置'}`" :visible.sync="showAddDialog" custom-class="add_dialog" width="800px" center>
       <el-form ref="ruleForm" :model="addObj" size="small" label-width="120px">
         <el-form-item label="橱窗编码:" required>
           <el-input v-model.trim="addObj.code" clearable placeholder="请输入橱窗编码" />
@@ -64,9 +65,12 @@
         <el-form-item label="配置链接:">
           <el-input v-model.trim="addObj.linkUrl" clearable placeholder="请输入配置链接" />
         </el-form-item>
-        <el-form-item label="广告内容:">
+        <el-form-item label="橱窗图片:">
           <Upload :limit="1" :filelist="filelist" @handleSuccess="handleSuccessUpload" @handleRemove="handleRemove" />
           <div class="tip">(格式:png,jpg,jpeg,gif,大小不超过1M)</div>
+        </el-form-item>
+        <el-form-item label="简介:">
+          <el-input v-model.trim="addObj.synopsis" type="textarea" :rows="3" placeholder="请输入简介" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -74,23 +78,27 @@
         <el-button size="small" @click="showAddDialog = false">返 回</el-button>
       </div>
     </el-dialog>
+    <ImgDialog :showViewImgDialog.sync="showViewImgDialog" :imgSrc="imgSrc"></ImgDialog>
   </div>
 </template>
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
 import Upload from '@/components/Upload/index'
+import ImgDialog from '@/components/ImgDialog/ImgDialog'
 var addObj = {
   id: '',
   code: '',
   linkUrl: '',
   name: '',
-  picUrl: ''
+  picUrl: '',
+  synopsis: ''
 }
 export default {
   components: {
     tlTable,
-    Upload
+    Upload,
+    ImgDialog
   },
   data() {
     return {
@@ -149,17 +157,9 @@ export default {
           }
         ],
         data: [
-          {
-            id: '001',
-            status: 1
-          },
-          {
-            id: '002',
-            status: 2
-          }
         ],
         operation: {
-          width: '200',
+          width: '100',
           data: [
             {
               label: '删除',
@@ -172,13 +172,19 @@ export default {
             {
               Fun: 'handleStatus',
               slot: true
+            },
+            {
+              label: '编辑',
+              Fun: 'handleEdit'
             }
           ]
         }
       },
       addObj: {},
       filelist: [],
-      showAddDialog: false
+      showAddDialog: false,
+      showViewImgDialog: false,
+      imgSrc: ''
     }
   },
   created() {
@@ -186,7 +192,9 @@ export default {
   },
   watch: {
     showAddDialog(val) {
-       this.filelist = []
+       if (!val) {
+         this.filelist = []
+       }
     }
   },
   methods: {
@@ -232,6 +240,11 @@ export default {
     handleSet(row) {
       this.$router.push({ name: 'ConfigGoods', query: { id: row.id }})
     },
+    handleEdit (row) {
+      this.showAddDialog = true
+      this.addObj = Object.assign({}, addObj, row)
+      this.filelist = row.picUrl ? [{ name: row.picUrl, url: row.picUrl }] : []
+    },
     handleDel(row) {
       this.$confirm('此操作将删除橱窗, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -260,7 +273,8 @@ export default {
         this.$message.error('橱窗名称长度不能超过50个汉字~')
         return
       }
-      this.$http.send(this.$api.showcase, this.addObj, 'post').then(res => {
+      const methods = this.addObj.id ? 'put' : 'post'
+      this.$http.send(this.$api.showcase, this.addObj, methods).then(res => {
         this.$message.success('操作成功')
         this.showAddDialog = false
         this.getInfor()
@@ -281,6 +295,10 @@ export default {
     sizeChange(size) {
       this.dataTable.size = size
       this.getInfor()
+    },
+    handlePreview (row) {
+      this.showViewImgDialog = true
+      this.imgSrc = row.picUrl
     }
   }
 }

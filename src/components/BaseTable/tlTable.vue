@@ -88,6 +88,7 @@
         <el-table-column
           v-if="table.hasOperation"
           column-key="operation"
+          fixed="right"
           :label="table.operation.label || '操作'"
           :width="table.operation.width ? table.operation.width : ''"
           :min-width="table.operation.minWidth ? table.operation.minWidth : ''"
@@ -238,7 +239,7 @@ export default {
   },
   created() {
     this.table.page = this.table.page || 1
-    this.table.size = this.table.size || 50
+    this.table.size = this.table.size || 20
     this.table.total = this.table.total || 0
     // this.$nextTick(() => {
     //   if (this.showTopPage) {

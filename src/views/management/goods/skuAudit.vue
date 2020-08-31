@@ -205,6 +205,9 @@ export default {
         this.skuDataTable.data = this.dataList
         let ObjMap = {}
         this.dataList.forEach(item => {
+          item.costPrice = item.costPrice ? item.costPrice / 100 : 0
+          item.marketPrice = item.marketPrice ? item.marketPrice / 100 : 0
+          item.salePrice = item.salePrice ? item.salePrice / 100 : 0
           let obj = JSON.parse(item.attribute)
           for(let i in obj) {
             if(!(ObjMap[i] instanceof Array)) {

@@ -25,10 +25,11 @@
         @sizeChange="sizeChange"
         @pageChange="pageChange"
         @handleDel="handleDel"
+        @handleEdit="handleEdit"
       >
         <template slot="picUrl" slot-scope="props">
           <span v-if="!props.obj.row.picUrl">暂无图片</span>
-          <img v-else :src="props.obj.row.picUrl" class="picUrl" alt="">
+          <img v-else :src="props.obj.row.picUrl" class="picUrl" alt="" @click="handlePreview(props.obj.row)">
         </template>
         <template slot="linkUrl" slot-scope="props">
           <a class="link_btn" :href="props.obj.row.linkUrl" target="_blank">{{ props.obj.row.linkUrl }}</a>
@@ -38,12 +39,12 @@
         </template>
         <template slot="handleStatus" slot-scope="props">
           <span v-if="props.obj.row.useStatus === 0" class="link_btn" @click="handleStatus(props.obj.row)">生效</span>
-          <span v-else class="link_btn red" @click="handleStatus(props.obj.row)">停用</span>
+          <span v-else class="link_btn" @click="handleStatus(props.obj.row)">停用</span>
         </template>
       </tl-table>
     </div>
     <!-- 新增广告 -->
-    <el-dialog title="新增广告配置" :visible.sync="showAddDialog" custom-class="add_dialog" width="600px" center>
+    <el-dialog :title="`${addObj.id ? '编辑广告配置' : '新增广告配置'}`" :visible.sync="showAddDialog" custom-class="add_dialog" width="600px" center>
       <el-form ref="ruleForm" :model="addObj" label-width="120px" size="small">
         <el-form-item label="广告编码:" required>
           <el-input v-model.trim="addObj.code" clearable placeholder="请输入广告编码" />
@@ -74,13 +75,16 @@
         <el-button size="small" @click="showAddDialog = false">返 回</el-button>
       </div>
     </el-dialog>
+    <ImgDialog :showViewImgDialog.sync="showViewImgDialog" :imgSrc="imgSrc"></ImgDialog>
   </div>
 </template>
 
 <script>
 import tlTable from '@/components/BaseTable/tlTable'
 import Upload from '@/components/Upload/index'
+import ImgDialog from '@/components/ImgDialog/ImgDialog'
 var addObj = {
+  id: '',
   name: '',
   code: '',
   linkUrl: '',
@@ -89,7 +93,8 @@ var addObj = {
 export default {
   components: {
     tlTable,
-    Upload
+    Upload,
+    ImgDialog
   },
   data() {
     return {
@@ -149,7 +154,7 @@ export default {
         ],
         data: [],
         operation: {
-          width: '200',
+          width: '100',
           data: [
             {
               label: '停用',
@@ -159,18 +164,26 @@ export default {
             {
               label: '删除',
               Fun: 'handleDel'
+            },
+            {
+              label: '编辑',
+              Fun: 'handleEdit'
             }
           ]
         }
       },
       addObj: {},
       showAddDialog: false,
-      filelist: []
+      filelist: [],
+      showViewImgDialog: false,
+      imgSrc: ''
     }
   },
   watch: {
     showAddDialog(val) {
-       this.filelist = []
+      if (!val) {
+         this.filelist = []
+       }
     }
   },
   created() {
@@ -251,7 +264,8 @@ export default {
         this.$message.error('请上传图片~')
         return
       }
-      this.$http.send(this.$api.banner, this.addObj, 'post').then(res => {
+      const methods = this.addObj.id ? 'put' : 'post'
+      this.$http.send(this.$api.banner, this.addObj, methods).then(res => {
         this.$message.success('操作成功')
         this.showAddDialog = false
         this.getInfor()
@@ -264,6 +278,15 @@ export default {
     },
     handleRemove(file, fileList) {
       this.addObj.picUrl = ''
+    },
+    handlePreview (row) {
+      this.showViewImgDialog = true
+      this.imgSrc = row.picUrl
+    },
+    handleEdit (row) {
+      this.showAddDialog = true
+      this.addObj = Object.assign({}, addObj, row)
+      this.filelist = row.picUrl ? [{ name: row.picUrl, url: row.picUrl }] : []
     },
     pageChange(page) {
       this.dataTable.page = page
